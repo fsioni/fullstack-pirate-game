@@ -2,11 +2,16 @@ package fr.univlyon1.m1if.m1if13.users.controllers;
 
 import fr.univlyon1.m1if.m1if13.users.dao.UserDao;
 import fr.univlyon1.m1if.m1if13.users.models.User;
+import fr.univlyon1.m1if.m1if13.users.services.http.HttpHeader;
+import fr.univlyon1.m1if.m1if13.users.services.http.HttpMessage;
+import fr.univlyon1.m1if.m1if13.users.services.http.HttpResponse;
+import fr.univlyon1.m1if.m1if13.users.services.http.HttpResponseBuilder;
 import fr.univlyon1.m1if.m1if13.users.utils.JwtHelper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import javax.naming.AuthenticationException;
 
 @RestController()
 @RequestMapping("/user")
@@ -27,25 +32,36 @@ public class UsersOperationsController {
      *                 préalablement et son login doit être présent dans le DAO.
      * @param password Le password à vérifier.
      * @return Une ResponseEntity avec le JWT dans le header "Authentication" si le
-     *         login s'est bien passé, et le code de statut approprié (204, 401 ou
-     *         404).
+     * login s'est bien passé, et le code de statut approprié (204, 401 ou
+     * 404).
      */
     @PostMapping("/login")
-    public ResponseEntity<Void> login(@RequestParam("login") String login, @RequestParam("password") String password,
-            @RequestHeader("Origin") String origin) {
+    public HttpResponse login(@RequestParam("login") String login, @RequestParam("password") String password,
+                              @RequestHeader("Origin") String origin) {
         User user = userDao.get(login).orElse(null);
         if (user == null) {
-            return ResponseEntity.status(404).build();
+            return new HttpResponseBuilder()
+                    .message(HttpMessage.USER_NOT_FOUND)
+                    .status(HttpStatus.NOT_FOUND)
+                    .build();
         }
 
         try {
             user.authenticate(password);
-        } catch (Exception e) {
-            return ResponseEntity.status(401).build();
+        } catch (AuthenticationException e) {
+            return new HttpResponseBuilder()
+                    .message(HttpMessage.WRONG_PASSWORD)
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .build();
         }
 
         String jwt = JwtHelper.generateToken(login, password, origin);
-        return ResponseEntity.status(204).header("Authentication", jwt).build();
+
+        return new HttpResponseBuilder()
+                .status(HttpStatus.OK)
+                .message(HttpMessage.LOGIN_SUCCESS)
+                .header(HttpHeader.AUTHENTICATION, jwt)
+                .build();
     }
 
     /**
@@ -53,19 +69,25 @@ public class UsersOperationsController {
      *
      * @param jwt The JWT token used for authentication.
      * @return A ResponseEntity with a status code indicating the result of the logout operation.
-     *         Returns 204 (No Content) if the logout is successful.
-     *         Returns 404 (Not Found) if the user associated with the provided JWT token is not found.
+     * Returns 204 (No Content) if the logout is successful.
+     * Returns 404 (Not Found) if the user associated with the provided JWT token is not found.
      */
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestHeader("Authentication") String jwt) {
+    public HttpResponse logout(@RequestHeader("Authentication") String jwt) {
         String login = JwtHelper.getLogin(jwt);
         User user = userDao.get(login).orElse(null);
         if (user == null) {
-            return ResponseEntity.status(404).build();
+            return new HttpResponseBuilder()
+                    .message(HttpMessage.USER_NOT_FOUND)
+                    .status(HttpStatus.NOT_FOUND)
+                    .build();
         }
 
         user.disconnect();
-        return ResponseEntity.status(204).build();
+
+        return new HttpResponseBuilder()
+                .status(HttpStatus.NO_CONTENT)
+                .build();
     }
 
     /**
@@ -79,19 +101,30 @@ public class UsersOperationsController {
      * @return Une réponse vide avec un code de statut approprié (204, 400, 401).
      */
     @GetMapping("/authenticate")
-    public ResponseEntity<String> authenticate(@RequestParam("jwt") String jwt, @RequestParam("origin") String origin) {
+    public HttpResponse authenticate(@RequestParam("jwt") String jwt, @RequestParam("origin") String origin) {
         if (jwt == null || jwt.isEmpty()) {
-            return ResponseEntity.status(400).body("JWT is missing.");
+            return new HttpResponseBuilder()
+                    .message(HttpMessage.JWT_MISSING)
+                    .status(HttpStatus.BAD_REQUEST)
+                    .build();
         }
 
         if (origin == null || origin.isEmpty()) {
-            return ResponseEntity.status(400).body("Origin is missing.");
+            return new HttpResponseBuilder()
+                    .message(HttpMessage.ORIGIN_MISSING)
+                    .status(HttpStatus.BAD_REQUEST)
+                    .build();
         }
 
         if (JwtHelper.verifyToken(jwt, origin)) {
-            return ResponseEntity.status(204).build();
+            return new HttpResponseBuilder()
+                    .status(HttpStatus.NO_CONTENT)
+                    .build();
         }
 
-        return ResponseEntity.status(401).build();
+        return new HttpResponseBuilder()
+                .message(HttpMessage.WRONG_PASSWORD)
+                .status(HttpStatus.UNAUTHORIZED)
+                .build();
     }
 }
