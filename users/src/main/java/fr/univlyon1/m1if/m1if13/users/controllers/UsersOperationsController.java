@@ -1,15 +1,15 @@
 package fr.univlyon1.m1if.m1if13.users.controllers;
 
 import fr.univlyon1.m1if.m1if13.users.dao.UserDao;
+import fr.univlyon1.m1if.m1if13.users.models.User;
+import fr.univlyon1.m1if.m1if13.users.utils.JwtHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
-@Controller
+@RestController()
+@RequestMapping("/user")
 public class UsersOperationsController {
 
     UserDao userDao;
@@ -28,8 +28,19 @@ public class UsersOperationsController {
      */
     @PostMapping("/login")
     public ResponseEntity<Void> login(@RequestParam("login") String login, @RequestParam("password") String password, @RequestHeader("Origin") String origin) {
-        // TODO
-        return null;
+        User user = userDao.get(login).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(404).build();
+        }
+
+        try {
+            user.authenticate(password);
+        } catch (Exception e) {
+            return ResponseEntity.status(401).build();
+        }
+
+        String jwt = JwtHelper.generateToken(login, password, origin);
+        return ResponseEntity.status(204).header("Authentication", jwt).build();
     }
 
     /**
