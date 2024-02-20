@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.naming.AuthenticationException;
 
+/**
+ * Controller class for user operations.
+ */
 @RestController()
 @RequestMapping("/user")
 public class UsersOperationsController {
@@ -26,14 +29,13 @@ public class UsersOperationsController {
     }
 
     /**
-     * Procédure de login utilisée par un utilisateur
+     * Authenticates a user by verifying the provided login and password,
+     * and generates a JWT token for authentication.
      *
-     * @param login    Le login de l'utilisateur. L'utilisateur doit avoir été créé
-     *                 préalablement et son login doit être présent dans le DAO.
-     * @param password Le password à vérifier.
-     * @return Une ResponseEntity avec le JWT dans le header "Authentication" si le
-     * login s'est bien passé, et le code de statut approprié (204, 401 ou
-     * 404).
+     * @param login    the login of the user
+     * @param password the password of the user
+     * @param origin   the origin of the request
+     * @return an HttpResponse with the appropriate status code, message, and JWT token as the authentication header
      */
     @PostMapping("/login")
     public HttpResponse login(@RequestParam("login") String login, @RequestParam("password") String password,
@@ -65,12 +67,10 @@ public class UsersOperationsController {
     }
 
     /**
-     * Logs out the user associated with the provided JWT token.
+     * Logs out a user by disconnecting them.
      *
-     * @param jwt The JWT token used for authentication.
-     * @return A ResponseEntity with a status code indicating the result of the logout operation.
-     * Returns 204 (No Content) if the logout is successful.
-     * Returns 404 (Not Found) if the user associated with the provided JWT token is not found.
+     * @param jwt the JWT token used for authentication
+     * @return an HttpResponse with the appropriate status code
      */
     @PostMapping("/logout")
     public HttpResponse logout(@RequestHeader("Authentication") String jwt) {
@@ -91,14 +91,11 @@ public class UsersOperationsController {
     }
 
     /**
-     * Méthode destinée au serveur Node pour valider l'authentification d'un
-     * utilisateur.
+     * Authenticates a user by verifying the provided JWT token and origin.
      *
-     * @param token  Le token JWT qui se trouve dans le header "Authentication" de
-     *               la requête
-     * @param origin L'origine de la requête (pour la comparer avec celle du client,
-     *               stockée dans le token JWT)
-     * @return Une réponse vide avec un code de statut approprié (204, 400, 401).
+     * @param jwt    the JWT token used for authentication
+     * @param origin the origin of the request
+     * @return an HttpResponse with an appropriate status code and message
      */
     @GetMapping("/authenticate")
     public HttpResponse authenticate(@RequestParam("jwt") String jwt, @RequestParam("origin") String origin) {
