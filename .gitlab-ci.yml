@@ -1,0 +1,18 @@
+cache:
+  key: "$CI_JOB_NAME"
+  paths:
+    - .m2/repository
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+
+deploy:
+  only:
+    - master
+  image: maven:4.0.0-openjdk-21
+  before_script:
+    - chmod 600 $CI_SSH_KEY
+  script:
+    - cd ./$PROJECT_FOLDER_NAME
+    - mvn clean package
+    - scp -o StrictHostKeyChecking=no -i $CI_SSH_KEY /builds/p1907037/mif13/$PROJECT_FOLDER_NAME/target/$SOURCE_WAR_NAME.war gitlabci@192.168.75.23:/opt/tomcat/webapps/$DESTINATION_WAR_NAME.war
+
