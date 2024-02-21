@@ -9,6 +9,8 @@ import fr.univlyon1.m1if.m1if13.users.services.http.HttpResponseBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -17,7 +19,7 @@ import java.util.Set;
 /**
  * This class represents a controller for CRUD operations on users.
  */
-@RestController()
+@Controller()
 @RequestMapping("/users")
 public class UsersCrudController {
     UserDao userDao;
@@ -32,7 +34,10 @@ public class UsersCrudController {
      *
      * @return a ResponseEntity containing a message, a status code and the users
      */
-    @GetMapping()
+    @GetMapping(produces = {
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.APPLICATION_XML_VALUE,
+    })
     public HttpResponse getUsers() {
         Set<String> users = userDao.getAll();
         if (users.isEmpty()) {
@@ -49,13 +54,25 @@ public class UsersCrudController {
                 .build();
     }
 
+    @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
+    public String getUsersHtml(Model model) {
+        Set<String> users = userDao.getAll();
+
+        model.addAttribute("users", users);
+        return "users";
+    }
+
     /**
      * Retrieves a user by their login.
      *
      * @param login the login of the user to retrieve
      * @return a ResponseEntity containing a message, a status code and the user
      */
-    @GetMapping("/{login}")
+    @GetMapping(value = "/{login}",
+            produces = {
+                    MediaType.APPLICATION_JSON_VALUE,
+                    MediaType.APPLICATION_XML_VALUE,
+            })
     public HttpResponse getUser(@PathVariable String login) {
         User user = userDao.get(login).orElse(null);
 
@@ -72,6 +89,7 @@ public class UsersCrudController {
                 .status(HttpStatus.OK)
                 .build();
     }
+
 
     /**
      * Adds a new user to the system.
