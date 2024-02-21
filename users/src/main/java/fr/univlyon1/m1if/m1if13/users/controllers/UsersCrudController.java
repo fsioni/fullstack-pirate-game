@@ -8,6 +8,7 @@ import fr.univlyon1.m1if.m1if13.users.services.http.HttpResponse;
 import fr.univlyon1.m1if.m1if13.users.services.http.HttpResponseBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -76,10 +77,31 @@ public class UsersCrudController {
      * Adds a new user to the system.
      *
      * @param user the CreateUserDto object containing the user information
+     * @return an HttpResponse object
+     */
+    @PostMapping(consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public HttpResponse addUserUrlEncoded(CreateUserDto user) {
+        return addUser(user);
+    }
+
+    /**
+     * Adds a new user to the system.
+     *
+     * @param user the CreateUserDto object containing the user information
      * @return a ResponseEntity containing a message, a status code and the user
      */
-    @PostMapping()
-    public HttpResponse addUser(@RequestBody CreateUserDto user) {
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    public HttpResponse addUserJson(@RequestBody CreateUserDto user) {
+        return addUser(user);
+    }
+
+    /**
+     * Adds a new user to the system.
+     *
+     * @param user the CreateUserDto object containing the user information
+     * @return an HttpResponse object containing a message, a status code, and the user
+     */
+    private HttpResponse addUser(CreateUserDto user) {
         if (userDao.get(user.getLogin()).isPresent()) {
             return new HttpResponseBuilder()
                     .message(HttpMessage.USER_ALREADY_EXISTS)
@@ -102,10 +124,26 @@ public class UsersCrudController {
      *
      * @param login    the login of the user
      * @param password the new password
+     * @return an instance of HttpResponse containing a message and a status code
+     */
+    @PutMapping(path = "/{login}", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public HttpResponse updatePasswordUrlEncoded(@PathVariable String login, String password) {
+        return updatePassword(login, password);
+    }
+
+    /**
+     * Updates the password of a user.
+     *
+     * @param login    the login of the user
+     * @param password the new password
      * @return a ResponseEntity containing a message and a status code
      */
-    @PutMapping("/{login}")
-    public HttpResponse updatePassword(@PathVariable String login, @RequestBody String password) {
+    @PutMapping(path = "/{login}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public HttpResponse updatePasswordJson(@PathVariable String login, @RequestBody String password) {
+        return updatePassword(login, password);
+    }
+
+    private HttpResponse updatePassword(String login, String password) {
         Optional<User> optionalUser = userDao.get(login);
 
         if (optionalUser.isEmpty()) {
@@ -123,6 +161,7 @@ public class UsersCrudController {
                 .status(HttpStatus.OK)
                 .build();
     }
+
 
     /**
      * Deletes a user by their login.
