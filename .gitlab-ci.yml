@@ -10,11 +10,13 @@ deploy:
     - main
   image: jelastic/maven:3.9.5-openjdk-21
   before_script:
-      - chmod 770 ./ci/setup-mvn-proxy.sh
-      - ./ci/setup-mvn-proxy.sh
-
+    - chmod 770 ./ci/setup-mvn-proxy.sh
+    - ./ci/setup-mvn-proxy.sh
+    - echo "$CI_SSH_KEY" > ./deploy_key
+    - chmod 600 ./deploy_key
   script:
     - cd ./$PROJECT_FOLDER_NAME
     - mvn clean package
-    - scp -o StrictHostKeyChecking=no -i $CI_SSH_KEY /builds/p1907037/mif13/$PROJECT_FOLDER_NAME/target/$SOURCE_WAR_NAME.war gitlabci@192.168.75.23:/opt/tomcat/webapps/$DESTINATION_WAR_NAME.war
-
+    - scp -o StrictHostKeyChecking=no -i ./deploy_key /builds/p1907037/mif13/$PROJECT_FOLDER_NAME/target/$SOURCE_WAR_NAME.war gitlabci@192.168.75.23:/opt/tomcat/webapps/$DESTINATION_WAR_NAME.war
+  after_script:
+    - rm -f ./deploy_key
