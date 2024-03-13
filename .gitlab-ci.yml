@@ -10,7 +10,7 @@ deploy:
     - main
   image: jelastic/maven:3.9.5-openjdk-21
   before_script:
-    - chmod 600 $CI_SSH_KEY
+    # - chmod 600 $CI_SSH_KEY
   script:
     - cd ./$PROJECT_FOLDER_NAME
     - mvn clean package
