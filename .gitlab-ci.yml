@@ -12,7 +12,6 @@ deploy:
   before_script:
       - chmod 770 ./ci/setup-mvn-proxy.sh
       - ./ci/setup-mvn-proxy.sh
-      - chmod 400 $CI_SSH_KEY
 
   script:
     - cd ./$PROJECT_FOLDER_NAME
