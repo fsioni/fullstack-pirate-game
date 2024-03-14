@@ -1,6 +1,6 @@
 package fr.univlyon1.m1if.m1if13.users.models;
 
-import javax.naming.AuthenticationException;
+import fr.univlyon1.m1if.m1if13.users.exceptions.MismatchPasswordException;
 
 public class User {
     private final String login;
@@ -44,9 +44,9 @@ public class User {
         return this.connected;
     }
 
-    public void authenticate(String password) throws AuthenticationException {
+    public void authenticate(String password) {
         if (!password.equals(this.password)) {
-            throw new AuthenticationException("Erroneous password");
+            throw new MismatchPasswordException();
         }
         this.connected = true;
     }

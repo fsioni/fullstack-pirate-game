@@ -2,6 +2,9 @@ package fr.univlyon1.m1if.m1if13.users.controllers;
 
 import fr.univlyon1.m1if.m1if13.users.dao.UserDao;
 import fr.univlyon1.m1if.m1if13.users.dto.CreateUserDto;
+import fr.univlyon1.m1if.m1if13.users.exceptions.LoginAlreadyExistsException;
+import fr.univlyon1.m1if.m1if13.users.exceptions.UserNotFoundException;
+import fr.univlyon1.m1if.m1if13.users.exceptions.UsersNotFoundException;
 import fr.univlyon1.m1if.m1if13.users.models.User;
 import fr.univlyon1.m1if.m1if13.users.services.http.HttpMessage;
 import fr.univlyon1.m1if.m1if13.users.services.http.HttpResponse;
@@ -13,13 +16,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
 import java.util.Set;
 
 /**
  * This class represents a controller for CRUD operations on users.
  */
 @Controller()
+@RestControllerAdvice
 @RequestMapping("/users")
 public class UsersCrudController {
     UserDao userDao;
@@ -41,10 +44,7 @@ public class UsersCrudController {
     public HttpResponse getUsers() {
         Set<String> users = userDao.getAll();
         if (users.isEmpty()) {
-            return new HttpResponseBuilder()
-                    .message(HttpMessage.NO_USERS_FOUND)
-                    .status(HttpStatus.NOT_FOUND)
-                    .build();
+            throw new UsersNotFoundException();
         }
 
         return new HttpResponseBuilder()
@@ -57,6 +57,12 @@ public class UsersCrudController {
     @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
     public String getUsersHtml(Model model) {
         Set<String> users = userDao.getAll();
+
+        if (users.isEmpty()) {
+            model.addAttribute("message", HttpMessage.NO_USERS_FOUND);
+            model.addAttribute("status", HttpStatus.NOT_FOUND);
+            return "error";
+        }
 
         model.addAttribute("users", users);
         return "users";
@@ -74,14 +80,7 @@ public class UsersCrudController {
                     MediaType.APPLICATION_XML_VALUE,
             })
     public HttpResponse getUser(@PathVariable String login) {
-        User user = userDao.get(login).orElse(null);
-
-        if (user == null) {
-            return new HttpResponseBuilder()
-                    .message(HttpMessage.USER_NOT_FOUND)
-                    .status(HttpStatus.NOT_FOUND)
-                    .build();
-        }
+        User user = userDao.get(login).orElseThrow(UserNotFoundException::new);
 
         return new HttpResponseBuilder()
                 .message(HttpMessage.USER_FOUND)
@@ -90,6 +89,14 @@ public class UsersCrudController {
                 .build();
     }
 
+    @GetMapping(value = "/{login}",
+            produces = MediaType.TEXT_HTML_VALUE)
+    public String getUserHtml(@PathVariable String login, Model model) {
+        User user = userDao.get(login).orElseThrow(UserNotFoundException::new);
+
+        model.addAttribute("user", user);
+        return "user";
+    }
 
     /**
      * Adds a new user to the system.
@@ -121,10 +128,7 @@ public class UsersCrudController {
      */
     private HttpResponse addUser(CreateUserDto user) {
         if (userDao.get(user.getLogin()).isPresent()) {
-            return new HttpResponseBuilder()
-                    .message(HttpMessage.USER_ALREADY_EXISTS)
-                    .status(HttpStatus.CONFLICT)
-                    .build();
+            throw new LoginAlreadyExistsException();
         }
 
         User newUser = new User(user.getLogin(), user.getSpecies(), user.getPassword(), user.getImage());
@@ -162,16 +166,7 @@ public class UsersCrudController {
     }
 
     private HttpResponse updatePassword(String login, String password) {
-        Optional<User> optionalUser = userDao.get(login);
-
-        if (optionalUser.isEmpty()) {
-            return new HttpResponseBuilder()
-                    .message(HttpMessage.USER_NOT_FOUND)
-                    .status(HttpStatus.NOT_FOUND)
-                    .build();
-        }
-
-        User user = optionalUser.get();
+        User user = userDao.get(login).orElseThrow(UserNotFoundException::new);
         user.setPassword(password);
 
         return new HttpResponseBuilder()
@@ -188,15 +183,7 @@ public class UsersCrudController {
      */
     @DeleteMapping("/{login}")
     public HttpResponse deleteUser(@PathVariable String login) {
-        User user = userDao.get(login).orElse(null);
-
-        if (user == null) {
-
-            return new HttpResponseBuilder()
-                    .message(HttpMessage.USER_NOT_FOUND)
-                    .status(HttpStatus.NOT_FOUND)
-                    .build();
-        }
+        User user = userDao.get(login).orElseThrow(UserNotFoundException::new);
 
         userDao.delete(user);
 

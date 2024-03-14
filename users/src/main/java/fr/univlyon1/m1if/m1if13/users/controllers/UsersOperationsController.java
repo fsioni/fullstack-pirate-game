@@ -1,6 +1,7 @@
 package fr.univlyon1.m1if.m1if13.users.controllers;
 
 import fr.univlyon1.m1if.m1if13.users.dao.UserDao;
+import fr.univlyon1.m1if.m1if13.users.exceptions.*;
 import fr.univlyon1.m1if.m1if13.users.models.User;
 import fr.univlyon1.m1if.m1if13.users.services.http.HttpHeader;
 import fr.univlyon1.m1if.m1if13.users.services.http.HttpMessage;
@@ -10,8 +11,7 @@ import fr.univlyon1.m1if.m1if13.users.utils.JwtHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import javax.naming.AuthenticationException;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Controller class for user operations.
@@ -40,22 +40,9 @@ public class UsersOperationsController {
     @PostMapping("/login")
     public HttpResponse login(@RequestParam("login") String login, @RequestParam("password") String password,
                               @RequestHeader("Origin") String origin) {
-        User user = userDao.get(login).orElse(null);
-        if (user == null) {
-            return new HttpResponseBuilder()
-                    .message(HttpMessage.USER_NOT_FOUND)
-                    .status(HttpStatus.NOT_FOUND)
-                    .build();
-        }
+        User user = userDao.get(login).orElseThrow(UserNotFoundException::new);
 
-        try {
-            user.authenticate(password);
-        } catch (AuthenticationException e) {
-            return new HttpResponseBuilder()
-                    .message(HttpMessage.WRONG_PASSWORD)
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .build();
-        }
+        user.authenticate(password);
 
         String jwt = JwtHelper.generateToken(login, password, origin);
 
@@ -75,19 +62,11 @@ public class UsersOperationsController {
     @PostMapping("/logout")
     public HttpResponse logout(@RequestHeader("Authentication") String jwt) {
         String login = JwtHelper.getLogin(jwt);
-        User user = userDao.get(login).orElse(null);
-        if (user == null) {
-            return new HttpResponseBuilder()
-                    .message(HttpMessage.USER_NOT_FOUND)
-                    .status(HttpStatus.NOT_FOUND)
-                    .build();
-        }
+        User user = userDao.get(login).orElseThrow(UserNotFoundException::new);
 
         user.disconnect();
 
-        return new HttpResponseBuilder()
-                .status(HttpStatus.NO_CONTENT)
-                .build();
+        throw new ResponseStatusException(HttpStatus.NO_CONTENT);
     }
 
     /**
@@ -100,28 +79,22 @@ public class UsersOperationsController {
     @GetMapping("/authenticate")
     public HttpResponse authenticate(@RequestParam("jwt") String jwt, @RequestParam("origin") String origin) {
         if (jwt == null || jwt.isEmpty()) {
-            return new HttpResponseBuilder()
-                    .message(HttpMessage.JWT_MISSING)
-                    .status(HttpStatus.BAD_REQUEST)
-                    .build();
+            throw new NoJwtProvidedException();
         }
 
         if (origin == null || origin.isEmpty()) {
-            return new HttpResponseBuilder()
-                    .message(HttpMessage.ORIGIN_MISSING)
-                    .status(HttpStatus.BAD_REQUEST)
-                    .build();
+            throw new NoOriginProvidedException();
         }
 
         if (JwtHelper.verifyToken(jwt, origin)) {
+            User user = userDao.get(JwtHelper.getLogin(jwt)).orElseThrow(UserNotFoundException::new);
+
             return new HttpResponseBuilder()
-                    .status(HttpStatus.NO_CONTENT)
+                    .status(HttpStatus.OK)
+                    .data("user", user)
                     .build();
         }
 
-        return new HttpResponseBuilder()
-                .message(HttpMessage.WRONG_PASSWORD)
-                .status(HttpStatus.UNAUTHORIZED)
-                .build();
+        throw new InvalidJwtException();
     }
 }

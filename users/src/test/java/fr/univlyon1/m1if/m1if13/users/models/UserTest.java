@@ -1,6 +1,5 @@
 package fr.univlyon1.m1if.m1if13.users.models;
 
-import javax.naming.AuthenticationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,64 +16,44 @@ class UserTest {
 
     @Test
     void getLogin() {
-        assert(anny.getLogin().equals("Anny Bonney"));
-        assert(francois.getLogin().equals("François Perrin"));
+        assert (anny.getLogin().equals("Anny Bonney"));
+        assert (francois.getLogin().equals("François Perrin"));
     }
 
     @Test
     void getSpecies() {
-        assert(anny.getSpecies().equals(Species.PIRATE));
-        assert(francois.getSpecies().equals(Species.VILLAGEOIS));
+        assert (anny.getSpecies().equals(Species.PIRATE));
+        assert (francois.getSpecies().equals(Species.VILLAGEOIS));
     }
 
     @Test
     void setPassword() {
         anny.setPassword("ectoplasme");
-        try {
-            anny.authenticate("ectoplasme");
-            assert(true);
-        } catch (AuthenticationException e) {
-            fail(e.getMessage());
-        }
+        anny.authenticate("ectoplasme");
+        assert (true);
     }
 
     @Test
     void isConnected() {
-        try {
-            anny.authenticate("milsabor");
-            assert(anny.isConnected());
-            anny.disconnect();
-            assert(!anny.isConnected());
-        } catch (AuthenticationException e) {
-            fail(e.getMessage());
-        }
+        anny.authenticate("milsabor");
+        assert (anny.isConnected());
+        anny.disconnect();
+        assert (!anny.isConnected());
     }
 
     @Test
     void authenticate() {
-        try {
-            anny.authenticate("milsabor");
-            assert(true);
-        } catch (AuthenticationException e) {
-            fail(e.getMessage());
-        }
+        anny.authenticate("milsabor");
+        assert (true);
 
-        try {
-            francois.authenticate("milsabor");
-            fail("Mot de passe incorrect");
-        } catch (AuthenticationException e) {
-            assert(true);
-        }
+        francois.authenticate("milsabor");
+        fail("Mot de passe incorrect");
     }
 
     @Test
     void disconnect() {
-        try {
-            anny.authenticate("milsabor");
-            anny.disconnect();
-            assert(!anny.isConnected());
-        } catch (AuthenticationException e) {
-            fail(e.getMessage());
-        }
+        anny.authenticate("milsabor");
+        anny.disconnect();
+        assert (!anny.isConnected());
     }
 }
