@@ -5,6 +5,7 @@ import fr.univlyon1.m1if.m1if13.users.models.User;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 public class UserDao implements Dao<User> {
@@ -20,12 +21,14 @@ public class UserDao implements Dao<User> {
 
     @Override
     public Optional<User> get(String login) {
-        return users.stream().filter(user -> user.getLogin().equals(login)).findFirst();
+        return users.stream()
+                .filter(user -> user.getLogin().equals(login))
+                .findFirst();
     }
 
     @Override
     public Set<String> getAll() {
-        return users.stream().map(User::getLogin).collect(java.util.stream.Collectors.toSet());
+        return users.stream().map(User::getLogin).collect(Collectors.toSet());
     }
 
     @Override
