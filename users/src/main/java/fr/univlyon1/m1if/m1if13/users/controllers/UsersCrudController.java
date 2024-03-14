@@ -9,6 +9,10 @@ import fr.univlyon1.m1if.m1if13.users.models.User;
 import fr.univlyon1.m1if.m1if13.users.services.http.HttpMessage;
 import fr.univlyon1.m1if.m1if13.users.services.http.HttpResponse;
 import fr.univlyon1.m1if.m1if13.users.services.http.HttpResponseBuilder;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -37,6 +41,15 @@ public class UsersCrudController {
      *
      * @return a ResponseEntity containing a message, a status code and the users
      */
+    @Operation(summary = "Récupère tous les utilisateurs",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Utilisateurs trouvés",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = Set.class))),
+                    @ApiResponse(responseCode = "404", description = "Aucun utilisateur trouvé",
+                            content = @Content())
+            }
+    )
     @GetMapping(produces = {
             MediaType.APPLICATION_JSON_VALUE,
             MediaType.APPLICATION_XML_VALUE,
@@ -74,6 +87,15 @@ public class UsersCrudController {
      * @param login the login of the user to retrieve
      * @return a ResponseEntity containing a message, a status code and the user
      */
+    @Operation(summary = "Récupère un utilisateur par son login",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Utilisateur trouvé",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = User.class))),
+                    @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé",
+                            content = @Content())
+            }
+    )
     @GetMapping(value = "/{login}",
             produces = {
                     MediaType.APPLICATION_JSON_VALUE,
@@ -115,6 +137,15 @@ public class UsersCrudController {
      * @param user the CreateUserDto object containing the user information
      * @return a ResponseEntity containing a message, a status code and the user
      */
+    @Operation(summary = "Ajoute un nouvel utilisateur",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Utilisateur créé",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = User.class))),
+                    @ApiResponse(responseCode = "409", description = "Login déjà existant",
+                            content = @Content())
+            }
+    )
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public HttpResponse addUserJson(@RequestBody CreateUserDto user) {
         return addUser(user);
@@ -160,6 +191,18 @@ public class UsersCrudController {
      * @param password the new password
      * @return a ResponseEntity containing a message and a status code
      */
+    @Operation(summary = "Met à jour le mot de passe d'un utilisateur",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Mot de passe mis à jour avec succès",
+                            content = @Content()),
+                    @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé",
+                            content = @Content()),
+                    @ApiResponse(responseCode = "400", description = "Paramètres invalides",
+                            content = @Content()),
+                    @ApiResponse(responseCode = "500", description = "Erreur interne du serveur",
+                            content = @Content())
+            }
+    )
     @PutMapping(path = "/{login}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public HttpResponse updatePasswordJson(@PathVariable String login, @RequestBody String password) {
         return updatePassword(login, password);
@@ -181,6 +224,16 @@ public class UsersCrudController {
      *
      * @param login the login of the user to delete
      */
+    @Operation(summary = "Supprime un utilisateur par son login",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Utilisateur supprimé avec succès",
+                            content = @Content()),
+                    @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé",
+                            content = @Content()),
+                    @ApiResponse(responseCode = "500", description = "Erreur interne du serveur",
+                            content = @Content())
+            }
+    )
     @DeleteMapping("/{login}")
     public HttpResponse deleteUser(@PathVariable String login) {
         User user = userDao.get(login).orElseThrow(UserNotFoundException::new);
