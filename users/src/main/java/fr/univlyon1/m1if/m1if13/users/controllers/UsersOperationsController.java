@@ -8,6 +8,10 @@ import fr.univlyon1.m1if.m1if13.users.services.http.HttpMessage;
 import fr.univlyon1.m1if.m1if13.users.services.http.HttpResponse;
 import fr.univlyon1.m1if.m1if13.users.services.http.HttpResponseBuilder;
 import fr.univlyon1.m1if.m1if13.users.utils.JwtHelper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -37,6 +41,17 @@ public class UsersOperationsController {
      * @param origin   the origin of the request
      * @return an HttpResponse with the appropriate status code, message, and JWT token as the authentication header
      */
+    @Operation(summary = "Authentifie un utilisateur et génère un JWT",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Connexion réussie",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = String.class))),
+                    @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé",
+                            content = @Content()),
+                    @ApiResponse(responseCode = "401", description = "Authentification échouée",
+                            content = @Content())
+            }
+    )
     @PostMapping("/login")
     public HttpResponse login(@RequestParam("login") String login, @RequestParam("password") String password,
                               @RequestHeader("Origin") String origin) {
@@ -59,6 +74,13 @@ public class UsersOperationsController {
      * @param jwt the JWT token used for authentication
      * @return an HttpResponse with the appropriate status code
      */
+    @Operation(summary = "Déconnecte un utilisateur",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "Déconnexion réussie"),
+                    @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé",
+                            content = @Content())
+            }
+    )
     @PostMapping("/logout")
     public HttpResponse logout(@RequestHeader("Authentication") String jwt) {
         String login = JwtHelper.getLogin(jwt);
@@ -76,6 +98,19 @@ public class UsersOperationsController {
      * @param origin the origin of the request
      * @return an HttpResponse with an appropriate status code and message
      */
+    @Operation(summary = "Authentifie un utilisateur via JWT",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Authentification réussie",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = User.class))),
+                    @ApiResponse(responseCode = "400", description = "JWT ou origine non fourni",
+                            content = @Content()),
+                    @ApiResponse(responseCode = "401", description = "JWT invalide",
+                            content = @Content()),
+                    @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé",
+                            content = @Content())
+            }
+    )
     @GetMapping("/authenticate")
     public HttpResponse authenticate(@RequestParam("jwt") String jwt, @RequestParam("origin") String origin) {
         if (jwt == null || jwt.isEmpty()) {
