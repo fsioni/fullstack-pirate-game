@@ -1,435 +1,267 @@
-{
-  "openapi": "3.0.1",
-  "info": {
-    "title": "OpenAPI definition",
-    "version": "v0"
-  },
-  "servers": [
-    {
-      "url": "https://192.168.75.23:8080/users",
-      "description": "Serveur de développement"
-    }
-  ],
-  "paths": {
-    "/users/{login}": {
-      "get": {
-        "tags": [
-          "users-crud-controller"
-        ],
-        "summary": "Récupère un utilisateur par son login",
-        "operationId": "getUserHtml_1",
-        "parameters": [
-          {
-            "name": "login",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Utilisateur trouvé",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "oneOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "$ref": "#/components/schemas/User"
-                    }
-                  ]
-                }
-              },
-              "application/xml": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Utilisateur non trouvé"
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "users-crud-controller"
-        ],
-        "summary": "Met à jour le mot de passe d'un utilisateur",
-        "operationId": "updatePasswordUrlEncoded_1",
-        "parameters": [
-          {
-            "name": "login",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "password",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "string"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Mot de passe mis à jour avec succès",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Paramètres invalides"
-          },
-          "404": {
-            "description": "Utilisateur non trouvé"
-          },
-          "500": {
-            "description": "Erreur interne du serveur"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "users-crud-controller"
-        ],
-        "summary": "Supprime un utilisateur par son login",
-        "operationId": "deleteUser",
-        "parameters": [
-          {
-            "name": "login",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Utilisateur supprimé avec succès"
-          },
-          "404": {
-            "description": "Utilisateur non trouvé"
-          },
-          "500": {
-            "description": "Erreur interne du serveur"
-          }
-        }
-      }
-    },
-    "/users": {
-      "get": {
-        "tags": [
-          "users-crud-controller"
-        ],
-        "summary": "Récupère tous les utilisateurs",
-        "operationId": "getUsersHtml_1",
-        "responses": {
-          "200": {
-            "description": "Utilisateurs trouvés",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "oneOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "string"
-                    }
-                  ]
-                }
-              },
-              "application/xml": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Aucun utilisateur trouvé"
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "users-crud-controller"
-        ],
-        "summary": "Ajoute un nouvel utilisateur",
-        "operationId": "addUserUrlEncoded_1",
-        "parameters": [
-          {
-            "name": "user",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CreateUserDto"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUserDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "201": {
-            "description": "Utilisateur créé",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/User"
-                }
-              },
-              "*/*": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Login déjà existant"
-          }
-        }
-      }
-    },
-    "/user/logout": {
-      "post": {
-        "tags": [
-          "users-operations-controller"
-        ],
-        "summary": "Déconnecte un utilisateur",
-        "operationId": "logout",
-        "parameters": [
-          {
-            "name": "Authentication",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Déconnexion réussie",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Utilisateur non trouvé"
-          }
-        }
-      }
-    },
-    "/user/login": {
-      "post": {
-        "tags": [
-          "users-operations-controller"
-        ],
-        "summary": "Authentifie un utilisateur et génère un JWT",
-        "operationId": "login",
-        "parameters": [
-          {
-            "name": "login",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "password",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Origin",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Connexion réussie",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentification échouée"
-          },
-          "404": {
-            "description": "Utilisateur non trouvé"
-          }
-        }
-      }
-    },
-    "/user/authenticate": {
-      "get": {
-        "tags": [
-          "users-operations-controller"
-        ],
-        "summary": "Authentifie un utilisateur via JWT",
-        "operationId": "authenticate",
-        "parameters": [
-          {
-            "name": "jwt",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "origin",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Authentification réussie",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/User"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "JWT ou origine non fourni"
-          },
-          "401": {
-            "description": "JWT invalide"
-          },
-          "404": {
-            "description": "Utilisateur non trouvé"
-          }
-        }
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "CreateUserDto": {
-        "type": "object",
-        "properties": {
-          "login": {
-            "type": "string"
-          },
-          "species": {
-            "type": "string",
-            "enum": [
-              "PIRATE",
-              "VILLAGEOIS",
-              "ADMIN"
-            ]
-          },
-          "password": {
-            "type": "string"
-          },
-          "image": {
-            "type": "string"
-          }
-        }
-      },
-      "User": {
-        "type": "object",
-        "properties": {
-          "login": {
-            "type": "string"
-          },
-          "species": {
-            "type": "string",
-            "enum": [
-              "PIRATE",
-              "VILLAGEOIS",
-              "ADMIN"
-            ]
-          },
-          "password": {
-            "type": "string",
-            "writeOnly": true
-          },
-          "connected": {
-            "type": "boolean"
-          },
-          "image": {
-            "type": "string"
-          }
-        }
-      }
-    }
-  }
-}
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+paths:
+  /users/{login}:
+    get:
+      tags:
+      - users-crud-controller
+      summary: Récupère un utilisateur par son login
+      operationId: getUserHtml_1
+      parameters:
+      - name: login
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Utilisateur trouvé
+          content:
+            text/html:
+              schema:
+                type: string
+            application/json:
+              schema:
+                oneOf:
+                - type: string
+                - $ref: '#/components/schemas/User'
+            application/xml:
+              schema:
+                type: string
+        "404":
+          description: Utilisateur non trouvé
+    put:
+      tags:
+      - users-crud-controller
+      summary: Met à jour le mot de passe d'un utilisateur
+      operationId: updatePasswordUrlEncoded_1
+      parameters:
+      - name: login
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: password
+        in: query
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+        required: true
+      responses:
+        "200":
+          description: Mot de passe mis à jour avec succès
+          content:
+            '*/*':
+              schema:
+                type: string
+        "404":
+          description: Utilisateur non trouvé
+        "400":
+          description: Paramètres invalides
+        "500":
+          description: Erreur interne du serveur
+    delete:
+      tags:
+      - users-crud-controller
+      summary: Supprime un utilisateur par son login
+      operationId: deleteUser
+      parameters:
+      - name: login
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Utilisateur supprimé avec succès
+        "404":
+          description: Utilisateur non trouvé
+        "500":
+          description: Erreur interne du serveur
+  /users:
+    get:
+      tags:
+      - users-crud-controller
+      summary: Récupère tous les utilisateurs
+      operationId: getUsersHtml_1
+      responses:
+        "200":
+          description: Utilisateurs trouvés
+          content:
+            text/html:
+              schema:
+                type: string
+            application/json:
+              schema:
+                oneOf:
+                - type: string
+                - type: string
+            application/xml:
+              schema:
+                type: string
+        "404":
+          description: Aucun utilisateur trouvé
+    post:
+      tags:
+      - users-crud-controller
+      summary: Ajoute un nouvel utilisateur
+      operationId: addUserUrlEncoded_1
+      parameters:
+      - name: user
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/CreateUserDto'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+        "201":
+          description: Utilisateur créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+            '*/*':
+              schema:
+                type: string
+        "409":
+          description: Login déjà existant
+  /user/logout:
+    post:
+      tags:
+      - users-operations-controller
+      summary: Déconnecte un utilisateur
+      operationId: logout
+      parameters:
+      - name: Authentication
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: Déconnexion réussie
+          content:
+            '*/*':
+              schema:
+                type: string
+        "404":
+          description: Utilisateur non trouvé
+  /user/login:
+    post:
+      tags:
+      - users-operations-controller
+      summary: Authentifie un utilisateur et génère un JWT
+      operationId: login
+      parameters:
+      - name: login
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: password
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: Origin
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Connexion réussie
+          content:
+            application/json:
+              schema:
+                type: string
+        "404":
+          description: Utilisateur non trouvé
+        "401":
+          description: Authentification échouée
+  /user/authenticate:
+    get:
+      tags:
+      - users-operations-controller
+      summary: Authentifie un utilisateur via JWT
+      operationId: authenticate
+      parameters:
+      - name: jwt
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: origin
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Authentification réussie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "400":
+          description: JWT ou origine non fourni
+        "401":
+          description: JWT invalide
+        "404":
+          description: Utilisateur non trouvé
+components:
+  schemas:
+    CreateUserDto:
+      type: object
+      properties:
+        login:
+          type: string
+        species:
+          type: string
+          enum:
+          - PIRATE
+          - VILLAGEOIS
+          - ADMIN
+        password:
+          type: string
+        image:
+          type: string
+    User:
+      type: object
+      properties:
+        login:
+          type: string
+        species:
+          type: string
+          enum:
+          - PIRATE
+          - VILLAGEOIS
+          - ADMIN
+        password:
+          type: string
+          writeOnly: true
+        connected:
+          type: boolean
+        image:
+          type: string
