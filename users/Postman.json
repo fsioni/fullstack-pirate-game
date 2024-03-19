@@ -20,29 +20,17 @@
 								"header": [
 									{
 										"key": "Accept",
-										"value": "text/html"
+										"value": "application/json"
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/users/:login?format={{format}}",
+									"raw": "{{baseUrl}}/users/bertrand",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
 										"users",
-										":login"
-									],
-									"query": [
-										{
-											"key": "format",
-											"value": "{{format}}"
-										}
-									],
-									"variable": [
-										{
-											"key": "login",
-											"value": ""
-										}
+										"bertrand"
 									]
 								}
 							},
@@ -1088,7 +1076,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/user/authenticate?jwt=<string>&origin=<string>&format={{format}}",
+									"raw": "{{baseUrl}}/user/authenticate?jwt={{Authentication}}&origin={{Origin}}",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -1099,17 +1087,12 @@
 									"query": [
 										{
 											"key": "jwt",
-											"value": "<string>",
+											"value": "{{Authentication}}",
 											"description": "(Required) "
 										},
 										{
 											"key": "origin",
-											"value": "<string>",
-											"description": "(Required) "
-										},
-										{
-											"key": "format",
-											"value": "{{format}}"
+											"value": "{{Origin}}"
 										}
 									]
 								}
@@ -1496,14 +1479,13 @@
 						"method": "PUT",
 						"header": [],
 						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "password",
-									"value": "{{Pass1Bis}}",
-									"type": "text"
+							"mode": "raw",
+							"raw": "{{Pass1Bis}}",
+							"options": {
+								"raw": {
+									"language": "json"
 								}
-							]
+							}
 						},
 						"url": {
 							"raw": "{{baseUrl}}/users/{{Login1}}",
