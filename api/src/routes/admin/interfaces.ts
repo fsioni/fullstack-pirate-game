@@ -1,10 +1,12 @@
+import { Position } from '../../models/GameResource';
+
 interface ZrrRequestParams {
-	point1: [number, number];
-	point2: [number, number];
+	point1: Position;
+	point2: Position;
 }
 
 interface TtlRequestParams {
-    ttl: number;
+	ttl: number;
 }
 
 export { ZrrRequestParams, TtlRequestParams };
