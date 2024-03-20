@@ -22,21 +22,4 @@ public class WebConfig implements WebMvcConfigurer {
                 .mediaType("xml", MediaType.APPLICATION_XML)
                 .mediaType("html", MediaType.TEXT_HTML);
     }
-
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/login")
-                .allowedOrigins("http://localhost", "http://192.168.75.23", "https://192.168.75.23")
-                .allowedMethods("POST");
-
-        // Autoriser les origines pour POST /logout
-        registry.addMapping("/logout")
-                .allowedOrigins("http://localhost", "http://192.168.75.23", "https://192.168.75.23")
-                .allowedMethods("POST");
-
-        // Autoriser les origines pour GET /users/{login}
-        registry.addMapping("/users/{login}")
-                .allowedOrigins("http://localhost", "http://192.168.75.23", "https://192.168.75.23")
-                .allowedMethods("GET");
-    }
 }

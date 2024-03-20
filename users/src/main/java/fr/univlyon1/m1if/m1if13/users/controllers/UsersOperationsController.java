@@ -53,6 +53,7 @@ public class UsersOperationsController {
             }
     )
     @PostMapping("/login")
+    @CrossOrigin(origins = {"http://localhost", "http://192.168.75.23", "https://192.168.75.23"})
     public HttpResponse login(@RequestParam("login") String login, @RequestParam("password") String password,
                               @RequestHeader("Origin") String origin) {
         User user = userDao.get(login).orElseThrow(UserNotFoundException::new);
@@ -82,6 +83,7 @@ public class UsersOperationsController {
             }
     )
     @PostMapping("/logout")
+    @CrossOrigin(origins = {"http://localhost", "http://192.168.75.23", "https://192.168.75.23"})
     public HttpResponse logout(@RequestHeader("Authentication") String jwt) {
         String login = JwtHelper.getLogin(jwt);
         User user = userDao.get(login).orElseThrow(UserNotFoundException::new);
