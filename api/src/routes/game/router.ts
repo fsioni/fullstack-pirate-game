@@ -1,10 +1,11 @@
 import express from 'express';
-import { PlayerRequestParam, ResourceRequestParam } from './interfaces';
+import { PlayerRequestParam } from './interfaces';
 import { GameResource, Position } from '../../models/GameResource';
 import {
 	createNewPlayerAtPosition,
 	getPlayerByLogin,
 	getRessources,
+	takeResource,
 } from './service';
 import { RequestWithUser } from '../../middlewares/getUserMiddleware';
 
@@ -78,12 +79,26 @@ router.get('/resources', (req: RequestWithUser, res) => {
 });
 
 // Take a ressource
-router.post('/resources/:resourceId', (req, res) => {
-	const params: ResourceRequestParam = req.params as ResourceRequestParam;
+router.post('/resources/:resourceId', (req: RequestWithUser, res) => {
+	const resourceId: string = req.params.resourceId;
+	const resource = resourcesOnMap[resourceId];
+	if (!resource) {
+		res.status(404).json({
+			error: 'Not found',
+			message: 'Resource not found',
+		});
+		return;
+	}
+	if (!req.user) {
+		res.status(401).json({
+			error: 'Unauthorized',
+			message: 'Authentication failed.',
+		});
+		return;
+	}
 
-	const resource = resourcesOnMap[params.resourceId];
 	if (resource) {
-		//takeResource(initiatorId, resource, resourcesOnMap);
+		takeResource(req.user.login, resource, resourcesOnMap);
 		res.json(resource);
 	} else {
 		res.status(404).send('Resource not found');
@@ -94,6 +109,13 @@ router.post('/resources/:resourceId', (req, res) => {
 router.put('/resources/:playerLogin/position', (req, res) => {
 	const params: PlayerRequestParam = req.params as PlayerRequestParam;
 	const position: Position = req.body.position;
+	if (!position) {
+		res.status(400).json({
+			error: 'Bad request',
+			message: 'Position is required',
+		});
+		return;
+	}
 
 	if (!resourcesOnMap[params.playerLogin]) {
 		createNewPlayerAtPosition(resourcesOnMap, params, position);
