@@ -40,12 +40,12 @@ const getUserMiddleware = async (
 				error: 'Unauthorized',
 				message: 'Authentication failed.',
 			});
+		} else {
+			res.status(401).json({
+				error: 'Unauthorized',
+				message: 'Error when requesting the authentication server.',
+			});
 		}
-
-		res.status(401).json({
-			error: 'Unauthorized',
-			message: 'Error when requesting the authentication server.',
-		});
 	}
 };
 
