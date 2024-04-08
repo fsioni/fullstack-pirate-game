@@ -2,8 +2,8 @@
 const lat = 45.782, lng = 4.8656, zoom = 19;
 
 let mymap = L.map('map', {
-    center: [lat, lng],
-    zoom: zoom
+	center: [lat, lng],
+	zoom: zoom
 });
 
 // Initialisation de la map
@@ -43,3 +43,41 @@ function updateMap(latlng, zoom) {
 
 export { updateMap };
 export default initMap;
+
+// mettre à jour les champs au click
+mymap.on('click', function(e) {
+	document.getElementById('lat').value = e.latlng.lat;
+	document.getElementById('lon').value = e.latlng.lng;
+});
+
+// mettre à jour le champ au zoom
+mymap.on('zoomend', function() {
+	document.getElementById('zoom').value = mymap.getZoom();
+	document.getElementById('zoomValue').textContent = mymap.getZoom();
+});
+
+// mettre à jour les champs au déplacement
+mymap.on('moveend', function() {
+	const center = mymap.getCenter();
+	document.getElementById('lat').value = center.lat;
+	document.getElementById('lon').value = center.lng;
+});
+
+// mettre à jour la carte au changement des champs
+document.getElementById('lat').addEventListener('change', function() {
+	const lat = parseFloat(this.value);
+	const lng = parseFloat(document.getElementById('lon').value);
+	mymap.setView([lat, lng]);
+});
+
+document.getElementById('lon').addEventListener('change', function() {
+	const lat = parseFloat(document.getElementById('lat').value);
+	const lng = parseFloat(this.value);
+	mymap.setView([lat, lng]);
+});
+
+document.getElementById('zoom').addEventListener('input', function() {
+	const zoom = parseInt(this.value);
+	mymap.setZoom(zoom);
+	document.getElementById('zoomValue').textContent = zoom;
+});
