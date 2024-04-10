@@ -1,6 +1,6 @@
 import express from 'express';
 import { PlayerRequestParam, ResourceOperationRequest } from './interfaces';
-import { GameResource, Position } from '../../models/GameResource';
+import { Position } from '../../models/GameResource';
 import {
 	createNewPlayerAtPosition,
 	getPlayerByLogin,
@@ -10,50 +10,9 @@ import {
 	turnVillagerIntoPirate,
 } from './service';
 import { RequestWithUser } from '../../middlewares/getUserMiddleware';
+import { resourcesOnMap, zrr } from '../../models/GameState';
 
 const router = express.Router();
-
-const resourcesOnMap: { [key: string]: GameResource } = {
-	player1: {
-		id: 'player1',
-		role: 'VILLAGEOIS',
-		position: [0, 0],
-		flasks: [],
-		statistics: {
-			flasksGathered: 5,
-			piratesTerminated: 1,
-			villagersTurned: 0,
-		},
-	},
-	villageois2: {
-		id: 'villageois2',
-		role: 'VILLAGEOIS',
-		position: [0, 1],
-		flasks: [],
-		statistics: {
-			flasksGathered: 2,
-			piratesTerminated: 1,
-			villagersTurned: 0,
-		},
-	},
-	'2': {
-		id: '2',
-		role: 'PIRATE',
-		position: [0, 1],
-		flasks: [],
-		statistics: {
-			flasksGathered: 0,
-			piratesTerminated: 0,
-			villagersTurned: 2,
-		},
-	},
-	'3': {
-		id: '3',
-		role: 'FLASK',
-		position: [1, 0],
-		TTL: 10,
-	},
-};
 
 // Get all game resources positions (only who need to be showed)
 router.get('/resources', (req: RequestWithUser, res) => {
@@ -168,7 +127,15 @@ router.put('/resources/:playerLogin/position', (req, res) => {
 
 // Get zrr boundaries
 router.get('/zrr', (req, res) => {
-	res.send('Game zrr');
+	if (zrr === null) {
+		res.status(404).json({
+			error: 'Not found',
+			message: 'ZRR not defined yet',
+		});
+		return;
+	}
+
+	res.json(zrr);
 });
 
 export default router;
