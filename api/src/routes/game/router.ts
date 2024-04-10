@@ -1,11 +1,13 @@
 import express from 'express';
-import { PlayerRequestParam } from './interfaces';
+import { PlayerRequestParam, ResourceOperationRequest } from './interfaces';
 import { GameResource, Position } from '../../models/GameResource';
 import {
 	createNewPlayerAtPosition,
 	getPlayerByLogin,
 	getRessources,
-	takeResource,
+	grabPotionFlask,
+	terminatePirate,
+	turnVillagerIntoPirate,
 } from './service';
 import { RequestWithUser } from '../../middlewares/getUserMiddleware';
 
@@ -79,7 +81,7 @@ router.get('/resources', (req: RequestWithUser, res) => {
 });
 
 // Take a ressource
-router.post('/resources/:resourceId', (req: RequestWithUser, res) => {
+router.post('/resources/:resourceId', (req: ResourceOperationRequest, res) => {
 	const resourceId: string = req.params.resourceId;
 	const resource = resourcesOnMap[resourceId];
 	if (!resource) {
@@ -97,12 +99,50 @@ router.post('/resources/:resourceId', (req: RequestWithUser, res) => {
 		return;
 	}
 
-	if (resource) {
-		takeResource(req.user.login, resource, resourcesOnMap);
-		res.json(resource);
-	} else {
-		res.status(404).send('Resource not found');
+	const initiator = getPlayerByLogin(req.user.login, resourcesOnMap);
+	if (!initiator || initiator.role === 'FLASK') {
+		res.status(403).json({
+			error: 'Forbidden',
+			message: 'Only players can take resources',
+		});
+		return;
 	}
+
+	/*const isNear = isNearby(initiator.position, resource.position);*/
+	// TODO: check if the player is near the resource
+	const isNear = true;
+
+	if (!isNear) {
+		res.status(403).json({
+			error: 'Forbidden',
+			message: 'Resource is too far',
+		});
+		return;
+	}
+
+	const operationType = req.body.operationType;
+
+	switch (operationType) {
+	case 'grab potion flask':
+		grabPotionFlask(initiator, resource, resourcesOnMap);
+		break;
+	case 'turn villager into pirate':
+		turnVillagerIntoPirate(initiator, resource);
+		break;
+	case 'terminate pirate':
+		terminatePirate(initiator, resource, resourcesOnMap);
+		break;
+	default:
+		res.status(400).json({
+			error: 'Invalid operation',
+			message:
+					'Invalid operation type or resource is not operable by user at this moment',
+		});
+		return;
+	}
+
+	res.status(204).json();
+	return;
 });
 
 // Update the position of a player

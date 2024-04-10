@@ -2,6 +2,7 @@ import { PlayerRequestParam } from './interfaces';
 import { GameResource, Position } from '../../models/GameResource';
 
 const DEFAULT_PLAYER_ROLE = 'VILLAGEOIS';
+const MAX_DISTANCE_TO_INTERACT = 5;
 
 function getRessources(
 	player: GameResource,
@@ -46,8 +47,9 @@ function createNewPlayerAtPosition(
 function takeResource(
 	initiatorId: string,
 	resource: GameResource,
-	resources: { [key: string]: GameResource },
+	//resources: { [key: string]: GameResource },
 ) {
+	console.log(`initiatorId: ${initiatorId} resource: ${resource}`);
 	/*const initiator = resources[initiatorId];
 
     if (!initiator || initiator.role === 'fiole') {
@@ -79,9 +81,81 @@ function takeResource(
     }*/
 }
 
+function grabPotionFlask(
+	player: GameResource,
+	resource: GameResource,
+	resources: { [key: string]: GameResource },
+) {
+	if (player.role === 'VILLAGEOIS' && resource.role === 'FLASK') {
+		player.flasks.push(resource);
+		player.statistics.flasksGathered++;
+
+		const flaskTTLInterval = setInterval(() => {
+			resource.TTL -= 1;
+
+			// If the flask's TTL has expired, remove it from the player's flasks
+			if (resource.TTL === 0) {
+				const flaskIndex = player.flasks.findIndex(
+					flask => flask.id === resource.id,
+				);
+				if (flaskIndex > -1) {
+					player.flasks.splice(flaskIndex, 1);
+				}
+				clearInterval(flaskTTLInterval);
+			}
+		}, 1000);
+
+		delete resources[resource.id];
+	}
+}
+
+function turnVillagerIntoPirate(player: GameResource, villager: GameResource) {
+	if (player.role === 'PIRATE' && villager.role === 'VILLAGEOIS') {
+		villager.role = 'PIRATE';
+		player.statistics.villagersTurned++;
+	}
+}
+
+function terminatePirate(
+	player: GameResource,
+	pirate: GameResource,
+	resources: { [key: string]: GameResource },
+) {
+	if (player.role === 'VILLAGEOIS' && pirate.role === 'PIRATE') {
+		delete resources[pirate.id];
+		player.statistics.piratesTerminated++;
+	}
+}
+
+function isNearby(position1: Position, position2: Position): boolean {
+	const RADIUS_OF_EARTH = 6371e3; // Rayon de la Terre en mètres
+
+	const [lat1, lon1] = position1.map(degrees => (degrees * Math.PI) / 180);
+	const [lat2, lon2] = position2.map(degrees => (degrees * Math.PI) / 180);
+
+	const deltaLat = lat2 - lat1;
+	const deltaLon = lon2 - lon1;
+
+	const a =
+		Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+		Math.cos(lat1) *
+			Math.cos(lat2) *
+			Math.sin(deltaLon / 2) *
+			Math.sin(deltaLon / 2);
+	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+	const distance = RADIUS_OF_EARTH * c; // Distance en mètres
+
+	return distance <= MAX_DISTANCE_TO_INTERACT;
+}
+
 export {
 	createNewPlayerAtPosition,
 	takeResource,
 	getPlayerByLogin,
 	getRessources,
+	grabPotionFlask,
+	turnVillagerIntoPirate,
+	terminatePirate,
+	isNearby,
 };
