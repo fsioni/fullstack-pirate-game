@@ -21,6 +21,26 @@ deploy:
   after_script:
     - rm -f /tmp/deploy_key
 
+deploy_api:
+  only:
+    - main
+  image: node:21.3.0-alpine3.18
+  before_script:
+    - chmod 770 ./ci/setup-mvn-proxy.sh
+    - ./ci/setup-mvn-proxy.sh
+    - echo "$CI_SSH_KEY" > /tmp/deploy_key
+    - chmod 600 /tmp/deploy_key
+  script:
+    - cd ./api
+    - npm i
+    - npm run build
+    - tar cvf build.tar.gz .
+    - scp -o StrictHostKeyChecking=no -i /tmp/deploy_key build.tar.gz gitlabci@192.168.75.23:/home/gitlabci/api/build.tar.gz
+    - ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key gitlabci@192.168.75.23 "cd /home/gitlabci/api/ && tar xvf build.tar.gz && npm ci && npm run start"
+
+  after_script:
+    - rm -f /tmp/deploy_key
+
 deploy_tp:
   stage: deploy
   image: jelastic/maven:3.9.5-openjdk-21
