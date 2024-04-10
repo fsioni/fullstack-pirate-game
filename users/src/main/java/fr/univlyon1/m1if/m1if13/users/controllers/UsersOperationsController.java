@@ -1,7 +1,10 @@
 package fr.univlyon1.m1if.m1if13.users.controllers;
 
 import fr.univlyon1.m1if.m1if13.users.dao.UserDao;
-import fr.univlyon1.m1if.m1if13.users.exceptions.*;
+import fr.univlyon1.m1if.m1if13.users.exceptions.InvalidJwtException;
+import fr.univlyon1.m1if.m1if13.users.exceptions.NoJwtProvidedException;
+import fr.univlyon1.m1if.m1if13.users.exceptions.NoOriginProvidedException;
+import fr.univlyon1.m1if.m1if13.users.exceptions.UserNotFoundException;
 import fr.univlyon1.m1if.m1if13.users.models.User;
 import fr.univlyon1.m1if.m1if13.users.services.http.HttpHeader;
 import fr.univlyon1.m1if.m1if13.users.services.http.HttpMessage;
