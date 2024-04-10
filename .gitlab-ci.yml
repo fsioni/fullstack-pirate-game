@@ -26,6 +26,7 @@ deploy_api:
     - main
   image: node:21.3.0-alpine3.18
   before_script:
+    - apk add --no-cache openssh-client
     - chmod 770 ./ci/setup-mvn-proxy.sh
     - ./ci/setup-mvn-proxy.sh
     - echo "$CI_SSH_KEY" > /tmp/deploy_key
