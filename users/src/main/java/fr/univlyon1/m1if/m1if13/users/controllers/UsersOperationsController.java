@@ -29,7 +29,6 @@ public class UsersOperationsController {
 
     UserDao userDao;
 
-
     @Autowired
     public UsersOperationsController(UserDao userDao) {
         this.userDao = userDao;
@@ -42,23 +41,19 @@ public class UsersOperationsController {
      * @param login    the login of the user
      * @param password the password of the user
      * @param origin   the origin of the request
-     * @return an HttpResponse with the appropriate status code, message, and JWT token as the authentication header
+     * @return an HttpResponse with the appropriate status code, message, and JWT
+     *         token as the authentication header
      */
-    @Operation(summary = "Authentifie un utilisateur et génère un JWT",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Connexion réussie",
-                            content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = String.class))),
-                    @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé",
-                            content = @Content()),
-                    @ApiResponse(responseCode = "401", description = "Authentification échouée",
-                            content = @Content())
-            }
-    )
+    @Operation(summary = "Authentifie un utilisateur et génère un JWT", responses = {
+            @ApiResponse(responseCode = "200", description = "Connexion réussie", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé", content = @Content()),
+            @ApiResponse(responseCode = "401", description = "Authentification échouée", content = @Content())
+    })
     @PostMapping("/login")
-    @CrossOrigin(origins = {"http://localhost", "http://192.168.75.23", "https://192.168.75.23", "http://localhost:3376"})
+    @CrossOrigin(origins = { "http://localhost", "http://192.168.75.23", "https://192.168.75.23",
+            "http://localhost:3376" }, exposedHeaders = "Authentication")
     public HttpResponse login(@RequestParam("login") String login, @RequestParam("password") String password,
-                              @RequestHeader("Origin") String origin) {
+            @RequestHeader("Origin") String origin) {
         User user = userDao.get(login).orElseThrow(UserNotFoundException::new);
 
         user.authenticate(password);
@@ -78,15 +73,13 @@ public class UsersOperationsController {
      * @param jwt the JWT token used for authentication
      * @return an HttpResponse with the appropriate status code
      */
-    @Operation(summary = "Déconnecte un utilisateur",
-            responses = {
-                    @ApiResponse(responseCode = "204", description = "Déconnexion réussie"),
-                    @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé",
-                            content = @Content())
-            }
-    )
+    @Operation(summary = "Déconnecte un utilisateur", responses = {
+            @ApiResponse(responseCode = "204", description = "Déconnexion réussie"),
+            @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé", content = @Content())
+    })
     @PostMapping("/logout")
-    @CrossOrigin(origins = {"http://localhost", "http://192.168.75.23", "https://192.168.75.23", "http://localhost:3376"})
+    @CrossOrigin(origins = { "http://localhost", "http://192.168.75.23", "https://192.168.75.23",
+            "http://localhost:3376" })
     public HttpResponse logout(@RequestHeader("Authentication") String jwt) {
         String login = JwtHelper.getLogin(jwt);
         User user = userDao.get(login).orElseThrow(UserNotFoundException::new);
@@ -103,19 +96,12 @@ public class UsersOperationsController {
      * @param origin the origin of the request
      * @return an HttpResponse with an appropriate status code and message
      */
-    @Operation(summary = "Authentifie un utilisateur via JWT",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Authentification réussie",
-                            content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = User.class))),
-                    @ApiResponse(responseCode = "400", description = "JWT ou origine non fourni",
-                            content = @Content()),
-                    @ApiResponse(responseCode = "401", description = "JWT invalide",
-                            content = @Content()),
-                    @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé",
-                            content = @Content())
-            }
-    )
+    @Operation(summary = "Authentifie un utilisateur via JWT", responses = {
+            @ApiResponse(responseCode = "200", description = "Authentification réussie", content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))),
+            @ApiResponse(responseCode = "400", description = "JWT ou origine non fourni", content = @Content()),
+            @ApiResponse(responseCode = "401", description = "JWT invalide", content = @Content()),
+            @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé", content = @Content())
+    })
     @GetMapping("/authenticate")
     public HttpResponse authenticate(@RequestParam("jwt") String jwt, @RequestParam("origin") String origin) {
         if (jwt == null || jwt.isEmpty()) {
