@@ -1,7 +1,7 @@
 var mymap = null;
 var zoneLayer = null;
 
-function init(map) {
+function init(map, apiPath) {
     mymap = map;
 
     // ==================
