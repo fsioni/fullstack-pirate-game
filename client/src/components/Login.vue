@@ -47,7 +47,6 @@ export default {
           return
         }
 
-        const data = await response.json()
         this.$emit('login-successful')
         const token = response.headers.get('Authentication')
         localStorage.setItem('token', token)
