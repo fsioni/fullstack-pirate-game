@@ -1,9 +1,9 @@
 import express from 'express';
-import adminOnlyMiddleware from "../../middlewares/adminOnlyMiddleware";
-import {Zrr} from "../../models/zrr";
-import {setTtl, setZrr, ttl, zrr} from "../../models/GameState";
-import {Position} from "../../models/GameResource";
-import {getRandomPositionInZrr} from "./service";
+import adminOnlyMiddleware from '../../middlewares/adminOnlyMiddleware';
+import { Zrr } from '../../models/zrr';
+import { setTtl, setZrr, ttl, zrr } from '../../models/GameState';
+import { Position } from '../../models/GameResource';
+import { getRandomPositionInZrr } from './service';
 
 const router = express.Router();
 
@@ -12,13 +12,13 @@ router.use(adminOnlyMiddleware);
 router.post('/zrr', (req, res) => {
     const newZrr: Zrr = req.body.zrr;
     if (!newZrr) {
-        res.status(400).send('Zrr is required');
+        res.status(400).json({ message: 'Zrr is required' });
         return;
     }
 
     setZrr(newZrr);
 
-    res.status(204).json();
+    res.status(204).json({ message: 'Zrr updated' });
 });
 
 router.post('/ttl', (req, res) => {
@@ -31,7 +31,7 @@ router.post('/ttl', (req, res) => {
 
     setTtl(newTtl);
 
-    res.status(204).json();
+    res.status(204).json({ message: 'Ttl updated' });
 });
 
 router.post('/potion', (req, res) => {

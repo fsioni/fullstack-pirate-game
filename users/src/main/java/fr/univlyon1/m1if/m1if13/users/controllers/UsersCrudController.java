@@ -101,6 +101,7 @@ public class UsersCrudController {
                     MediaType.APPLICATION_JSON_VALUE,
                     MediaType.APPLICATION_XML_VALUE,
             })
+    @CrossOrigin(origins = {"http://localhost", "http://192.168.75.23", "https://192.168.75.23", "http://localhost:3376"})
     public HttpResponse getUser(@PathVariable String login) {
         User user = userDao.get(login).orElseThrow(UserNotFoundException::new);
 
