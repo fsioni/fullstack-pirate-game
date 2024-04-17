@@ -13,41 +13,46 @@
 <script>
 export default {
   name: 'Login',
-  props: {
-    message: String
-  },
   data() {
     return {
       login: '',
-      password: ''
+      password: '',
+      message: ''
     }
   },
   methods: {
     async loginAction() {
       console.log('Login cliqué. Login:', this.login, 'Password:', this.password)
 
+      const body = new URLSearchParams()
+      body.append('login', this.login)
+      body.append('password', this.password)
       try {
-        const response = await fetch('localhost:8080/user/login', {
+        const response = await fetch('http://localhost:8080/user/login', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/x-www-form-urlencoded'
           },
-          body: JSON.stringify({
-            login: this.login,
-            password: this.password
-          })
+          body: body.toString()
         })
 
         if (!response.ok) {
-          throw new Error(`Erreur ${response.status}`)
+          let message = `Erreur ${response.status} lors de la connexion.`
+          if (response.status === 401) {
+            message = 'Login ou mot de passe incorrect.'
+          } else if (response.status === 404) {
+            message = 'Utilisateur introuvable.'
+          }
+          this.$emit('login-error', message)
+          return
         }
 
         const data = await response.json()
-        console.log('Réponse du serveur:', data)
-
-        // Gère ici la réponse, comme rediriger l'utilisateur ou sauvegarder le token de session
+        this.$emit('login-successful')
+        const token = response.headers.get('Authentication')
+        localStorage.setItem('token', token)
       } catch (error) {
-        console.error('Erreur lors de la connexion:', error)
+        this.$emit('login-error', 'Erreur lors de la connexion.')
       }
     }
   }

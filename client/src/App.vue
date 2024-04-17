@@ -6,9 +6,15 @@ import { reactive, toRefs } from 'vue'
 import Login from '@/components/Login.vue'
 
 const state = reactive({
-  isLogged: false
+  isLogged: false,
+  loginError: ''
 })
-const { isLogged } = toRefs(state)
+const { isLogged, loginError } = toRefs(state)
+
+function logout() {
+  isLogged.value = false
+  loginError.value = ''
+}
 </script>
 
 <template>
@@ -16,19 +22,24 @@ const { isLogged } = toRefs(state)
     <img alt="Vue logo" class="logo" height="125" src="@/assets/logo.svg" width="125" />
 
     <div class="wrapper">
-      <button @click="isLogged = !isLogged">Toggle login</button>
-
       <div v-if="isLogged">
+        <button @click="logout">Logout</button>
         <HelloWorld msg="You're logged in!" />
       </div>
       <div v-else>
         <HelloWorld msg="You're not logged in!" />
-        <Login />
+        {{ loginError }}
+        <Login
+          :error-message="loginError"
+          @login-successful="isLogged = true"
+          @login-error="loginError = $event"
+        />
       </div>
 
       <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>
+        <RouterLink to="/map">Map</RouterLink>
       </nav>
     </div>
   </header>

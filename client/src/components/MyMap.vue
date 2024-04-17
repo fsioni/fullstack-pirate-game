@@ -32,6 +32,7 @@ export default {
   },
   async beforeMount() {
     // HERE is where to load Leaflet components!
+    console.log('Loading Leaflet...')
     const L = await import('leaflet')
     // Procédure d'initialisation
     myMap = L.map('map', {
