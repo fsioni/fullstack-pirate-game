@@ -38,7 +38,7 @@ deploy_api:
     - tar cvf build.tar.gz node_modules dist 
     - scp -o StrictHostKeyChecking=no -i /tmp/deploy_key build.tar.gz gitlabci@192.168.75.23:/home/gitlabci/build.tar.gz
     - ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key gitlabci@192.168.75.23 "tar xvf build.tar.gz"
-    - ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key gitlabci@192.168.75.23 "pm2 delete api"
+    - ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key gitlabci@192.168.75.23 "pm2 delete api || true"
     - ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key gitlabci@192.168.75.23 "pm2 start dist/index.js --name 'api'"
 
   after_script:
