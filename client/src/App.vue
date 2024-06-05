@@ -2,7 +2,7 @@
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
 
-import { reactive, toRefs } from 'vue'
+import { onMounted, reactive, toRefs } from 'vue'
 import Login from '@/components/Login.vue'
 
 const state = reactive({
@@ -14,7 +14,34 @@ const { isLogged, loginError } = toRefs(state)
 function logout() {
   isLogged.value = false
   loginError.value = ''
+  localStorage.removeItem('token')
+  window.location.href = '/'
 }
+
+function checkLoginStatus() {
+  const token = localStorage.getItem('token')
+  if (token) {
+    const apiUrl =
+      import.meta.env.VITE_AUTH_API_URL +
+      '/user/authenticate?jwt=' +
+      token +
+      '&origin=' +
+      window.location.origin
+    fetch(apiUrl)
+      .then((response) => {
+        if (response.ok) {
+          isLogged.value = true
+        } else {
+          localStorage.removeItem('token')
+        }
+      })
+      .catch(() => {
+        localStorage.removeItem('token')
+      })
+  }
+}
+
+onMounted(checkLoginStatus)
 </script>
 
 <template>
@@ -38,7 +65,7 @@ function logout() {
 
       <nav>
         <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
+        <RouterLink v-if="isLogged" to="/profile">My profile</RouterLink>
         <RouterLink to="/map">Map</RouterLink>
       </nav>
     </div>

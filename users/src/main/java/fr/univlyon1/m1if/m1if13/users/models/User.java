@@ -37,7 +37,9 @@ public class User {
     }
 
     public void setPassword(String password) {
+        System.out.println("New user Password: " + password);
         this.password = password;
+        System.out.println("User password is set to: " + this.password);
     }
 
     public boolean isConnected() {
@@ -45,6 +47,8 @@ public class User {
     }
 
     public void authenticate(String password) {
+        System.out.println("Provided Password: " + password);
+        System.out.println("Current User password: " + this.password);
         if (!password.equals(this.password)) {
             throw new MismatchPasswordException();
         }

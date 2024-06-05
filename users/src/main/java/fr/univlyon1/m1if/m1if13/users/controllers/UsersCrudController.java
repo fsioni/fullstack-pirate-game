@@ -2,6 +2,7 @@ package fr.univlyon1.m1if.m1if13.users.controllers;
 
 import fr.univlyon1.m1if.m1if13.users.dao.UserDao;
 import fr.univlyon1.m1if.m1if13.users.dto.CreateUserDto;
+import fr.univlyon1.m1if.m1if13.users.dto.UpdatePasswordDto;
 import fr.univlyon1.m1if.m1if13.users.exceptions.LoginAlreadyExistsException;
 import fr.univlyon1.m1if.m1if13.users.exceptions.UserNotFoundException;
 import fr.univlyon1.m1if.m1if13.users.exceptions.UsersNotFoundException;
@@ -101,7 +102,7 @@ public class UsersCrudController {
                     MediaType.APPLICATION_JSON_VALUE,
                     MediaType.APPLICATION_XML_VALUE,
             })
-    @CrossOrigin(origins = {"http://localhost", "http://192.168.75.23", "https://192.168.75.23", "http://localhost:3376"})
+    @CrossOrigin(origins = {"http://localhost", "http://192.168.75.23", "https://192.168.75.23", "http://localhost:3376", "http://localhost:5173", "Postman"})
     public HttpResponse getUser(@PathVariable String login) {
         User user = userDao.get(login).orElseThrow(UserNotFoundException::new);
 
@@ -205,12 +206,13 @@ public class UsersCrudController {
             }
     )
     @PutMapping(path = "/{login}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public HttpResponse updatePasswordJson(@PathVariable String login, @RequestBody String password) {
-        return updatePassword(login, password);
+    public HttpResponse updatePasswordJson(@PathVariable String login, @RequestBody UpdatePasswordDto password) {
+        return updatePassword(login, password.getPassword());
     }
 
     private HttpResponse updatePassword(String login, String password) {
         User user = userDao.get(login).orElseThrow(UserNotFoundException::new);
+        System.out.println("Password: " + password);
         user.setPassword(password);
 
         return new HttpResponseBuilder()

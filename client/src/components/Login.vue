@@ -28,7 +28,8 @@ export default {
       body.append('login', this.login)
       body.append('password', this.password)
       try {
-        const response = await fetch('http://localhost:8080/user/login', {
+        const apiUrl = import.meta.env.VITE_AUTH_API_URL + '/user/login'
+        const response = await fetch(apiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -37,6 +38,8 @@ export default {
         })
 
         if (!response.ok) {
+          localStorage.removeItem('token')
+          localStorage.removeItem('login')
           let message = `Erreur ${response.status} lors de la connexion.`
           if (response.status === 401) {
             message = 'Login ou mot de passe incorrect.'
@@ -50,7 +53,10 @@ export default {
         this.$emit('login-successful')
         const token = response.headers.get('Authentication')
         localStorage.setItem('token', token)
+        localStorage.setItem('login', this.login)
       } catch (error) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('login')
         this.$emit('login-error', 'Erreur lors de la connexion.')
       }
     }
