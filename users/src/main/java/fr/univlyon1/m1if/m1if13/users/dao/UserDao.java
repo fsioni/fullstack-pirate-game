@@ -12,7 +12,7 @@ public class UserDao implements Dao<User> {
     private final List<User> users = new ArrayList<>();
 
     public UserDao() {
-        users.add(new User("admin", Species.ADMIN, "admin"));
+        users.add(new User("adm", Species.ADMIN, "adm"));
         users.add(new User("player1", Species.PIRATE, "password1", "pirate-1.png"));
         users.add(new User("player2", Species.PIRATE, "password2"));
         users.add(new User("player3", Species.VILLAGEOIS, "password3", "villageois-1.png"));
