@@ -11,6 +11,16 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableWebMvc
 public class WebConfig implements WebMvcConfigurer {
     @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:5173", "http://192.168.75.23", "https://192.168.75.23", "http://localhost:3376")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .exposedHeaders("Authentication")
+                .allowCredentials(true);
+    }
+
+    @Override
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
         configurer
                 .favorParameter(true)
@@ -21,22 +31,5 @@ public class WebConfig implements WebMvcConfigurer {
                 .mediaType("json", MediaType.APPLICATION_JSON)
                 .mediaType("xml", MediaType.APPLICATION_XML)
                 .mediaType("html", MediaType.TEXT_HTML);
-    }
-
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/login")
-                .allowedOrigins("http://localhost", "http://192.168.75.23", "https://192.168.75.23")
-                .allowedMethods("POST");
-
-        // Autoriser les origines pour POST /logout
-        registry.addMapping("/logout")
-                .allowedOrigins("http://localhost", "http://192.168.75.23", "https://192.168.75.23")
-                .allowedMethods("POST");
-
-        // Autoriser les origines pour GET /users/{login}
-        registry.addMapping("/users/{login}")
-                .allowedOrigins("http://localhost", "http://192.168.75.23", "https://192.168.75.23")
-                .allowedMethods("GET");
     }
 }
