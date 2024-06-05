@@ -35,6 +35,7 @@ deploy_api:
     - cd ./api
     - npm i
     - npm run build
+    - cd dist
     - tar cvf build.tar.gz .
     - scp -o StrictHostKeyChecking=no -i /tmp/deploy_key build.tar.gz gitlabci@192.168.75.23:/home/gitlabci/api/build.tar.gz
     - ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key gitlabci@192.168.75.23 "cd /home/gitlabci/api/ && tar xvf build.tar.gz && npm ci && pm2 delete api && pm2 start dist/index.js --name "api""
