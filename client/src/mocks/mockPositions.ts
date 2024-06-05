@@ -5,28 +5,39 @@ const lat = 45.782
 const lng = 4.8656
 
 const zrr: Zrr = [
-  [lat, lng],
-  [lat + 0.01, lng + 0.01]
+  [lat - 0.001, lng - 0.001],
+  [lat + 0.002, lng + 0.002]
 ]
+
+// Générer des positions aléatoires dans la zone
+function getRandomPositionInZrr(zrr: Zrr): [number, number] {
+  const minLat = Math.min(zrr[0][0], zrr[1][0])
+  const maxLat = Math.max(zrr[0][0], zrr[1][0])
+  const minLng = Math.min(zrr[0][1], zrr[1][1])
+  const maxLng = Math.max(zrr[0][1], zrr[1][1])
+  const randomLat = Math.random() * (maxLat - minLat) + minLat
+  const randomLng = Math.random() * (maxLng - minLng) + minLng
+  return [randomLat, randomLng]
+}
 
 const players: GameResource[] = [
   {
     id: '1',
-    position: [lat + 0.0001, lng + 0.0001],
+    position: getRandomPositionInZrr(zrr),
     role: 'VILLAGEOIS',
     flasks: [],
     statistics: { flasksGathered: 2, piratesTerminated: 1, villagersTurned: 0 }
   },
   {
     id: '2',
-    position: [lat + 0.0011, lng + 0.0011],
+    position: getRandomPositionInZrr(zrr),
     role: 'PIRATE',
     flasks: [],
     statistics: { flasksGathered: 0, piratesTerminated: 0, villagersTurned: 3 }
   },
   {
     id: '3',
-    position: [lat + 0.0021, lng + 0.0021],
+    position: getRandomPositionInZrr(zrr),
     role: 'VILLAGEOIS',
     flasks: [],
     statistics: { flasksGathered: 1, piratesTerminated: 0, villagersTurned: 0 }
@@ -36,13 +47,13 @@ const players: GameResource[] = [
 const flasks: GameResource[] = [
   {
     id: '1',
-    position: [lat + 0.0031, lng + 0.0031],
+    position: getRandomPositionInZrr(zrr),
     role: 'FLASK',
     TTL: 300
   },
   {
     id: '2',
-    position: [lat + 0.0041, lng + 0.0041],
+    position: getRandomPositionInZrr(zrr),
     role: 'FLASK',
     TTL: 300
   }
@@ -50,10 +61,10 @@ const flasks: GameResource[] = [
 
 const localPlayer: GameResource = {
   id: 'local',
-  position: [lat + 0.0051, lng + 0.0051],
+  position: getRandomPositionInZrr(zrr),
   role: 'VILLAGEOIS',
   flasks: [],
   statistics: { flasksGathered: 3, piratesTerminated: 2, villagersTurned: 1 }
 }
 
-export { players, flasks, localPlayer }
+export { players, flasks, localPlayer, zrr }
