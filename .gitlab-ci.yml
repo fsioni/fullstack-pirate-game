@@ -35,18 +35,18 @@ deploy_api:
     - cd ./api
     - npm i
     - npm run build
-    - tar cvf build.tar.gz node_modules dist > /home/gitlabci/tar.log 2>&1
+    - tar cvf build.tar.gz node_modules dist > /dev/null 2>&1
     - scp -o StrictHostKeyChecking=no -i /tmp/deploy_key build.tar.gz gitlabci@192.168.75.23:/home/gitlabci/api/build.tar.gz
-    - ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key gitlabci@192.168.75.23 "cd api && tar xvf build.tar.gz > /home/gitlabci/tar.log 2>&1"
+    - ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key gitlabci@192.168.75.23 "cd api && tar xvf build.tar.gz > /dev/null 2>&1"
     - ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key gitlabci@192.168.75.23 "cd api && pm2 delete api || true"
     - ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key gitlabci@192.168.75.23 "cd api && pm2 start dist/index.js --name 'api'"
     - cd ../admin
     - npm i
     - npm run build
-    - tar cvf build.tar.gz node_modules dist > /home/gitlabci/tar.log 2>&1
+    - tar cvf build.tar.gz node_modules dist > /dev/null 2>&1
     - scp -o StrictHostKeyChecking=no -i /tmp/deploy_key build.tar.gz gitlabci@192.168.75.23:/home/gitlabci/admin/build.tar.gz
     - ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key gitlabci@192.168.75.23 'sudo mv /home/gitlabci/admin/build.tar.gz /usr/share/nginx/secret/'
-    - ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key gitlabci@192.168.75.23 "cd /usr/share/nginx/secret && sudo tar xvf build.tar.gz > /home/gitlabci/tar.log 2>&1"
+    - ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key gitlabci@192.168.75.23 "cd /usr/share/nginx/secret && sudo tar xvf build.tar.gz > /dev/null 2>&1"
 
   after_script:
     - rm -f /tmp/deploy_key
