@@ -1,9 +1,6 @@
 <template>
   <section>
     <h2>Carte</h2>
-    <p class="content">
-      <strong>TODO :</strong> mettre à jour les positions des différents objets sur la carte.
-    </p>
     <div id="map" ref="map" class="map"></div>
   </section>
 </template>
@@ -14,11 +11,13 @@ import { flasks, localPlayer, players, zrr } from '@/mocks/mockPositions.ts'
 import pirateIconUrl from '@/assets/images/pirate.png'
 import villageoisIconUrl from '@/assets/images/villageois.png'
 import flaskIconUrl from '@/assets/images/flask.png'
+import playerIconUrl from '@/assets/images/player.png'
 
 let lat = 45.782,
   lng = 4.8656,
   zoom = 19
 let myMap = {}
+let localPlayerMarker = null
 
 function getIcons(L) {
   const pirateIcon = L.icon({
@@ -41,11 +40,19 @@ function getIcons(L) {
     iconAnchor: [16, 32],
     popupAnchor: [0, -32]
   })
-  return { pirateIcon, villageoisIcon, flaskIcon }
+
+  const playerIcon = L.icon({
+    iconUrl: playerIconUrl,
+    iconSize: [64, 64],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32]
+  })
+
+  return { pirateIcon, villageoisIcon, flaskIcon, playerIcon }
 }
 
 function addResourcesToMap(L) {
-  const { pirateIcon, villageoisIcon, flaskIcon } = getIcons(L)
+  const { pirateIcon, villageoisIcon, flaskIcon, playerIcon } = getIcons(L)
 
   players.forEach((player) => {
     const icon = player.role === 'PIRATE' ? pirateIcon : villageoisIcon
@@ -62,7 +69,7 @@ function addResourcesToMap(L) {
       .bindPopup(`Flacon ${flask.id}`)
   })
 
-  L.marker(localPlayer.position, { icon: villageoisIcon })
+  L.marker(localPlayer.position, { icon: playerIcon })
     .addTo(myMap)
     .bindPopup(`Local Player : ${localPlayer.role}`)
 
@@ -102,7 +109,44 @@ export default {
     updateMap: function () {
       myMap.setView([lat, lng], zoom)
       return false
+    },
+    updateLocalPlayerPosition: function (newPosition) {
+      localPlayer.position = newPosition
+
+      localPlayerMarker.setLatLng(newPosition)
+    },
+    sendLocalPlayerPositionToServer: function () {
+      const [latitude, longitude] = localPlayer.position
+      const positionData = JSON.stringify({ position: { x: latitude, y: longitude } })
+
+      const playerLogin = window.localStorage.getItem('login')
+      const token = window.localStorage.getItem('token')
+      const url = import.meta.env.VITE_GAME_API_URL + '/resources/' + playerLogin + '/position'
+      fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: positionData
+      })
+        .then((response) => response.json())
+        .then((data) => console.log(data))
+        .catch((error) => {
+          console.error('Error:', error)
+        })
     }
+  },
+  beforeRouteEnter(to, from, next) {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      next({ name: '/' }) // Redirige vers la page de connexion si l'utilisateur n'est pas connecté
+    } else {
+      next() // Continue vers la page de map si l'utilisateur est connecté
+    }
+  },
+  mounted() {
+    setInterval(this.sendLocalPlayerPositionToServer, 5000)
   },
   async beforeMount() {
     console.log('Loading Leaflet...')

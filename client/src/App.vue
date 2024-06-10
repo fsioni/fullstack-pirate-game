@@ -15,6 +15,7 @@ function logout() {
   isLogged.value = false
   loginError.value = ''
   localStorage.removeItem('token')
+  localStorage.removeItem('login')
   window.location.href = '/'
 }
 
@@ -33,10 +34,12 @@ function checkLoginStatus() {
           isLogged.value = true
         } else {
           localStorage.removeItem('token')
+          localStorage.removeItem('login')
         }
       })
       .catch(() => {
         localStorage.removeItem('token')
+        localStorage.removeItem('login')
       })
   }
 }
@@ -66,7 +69,7 @@ onMounted(checkLoginStatus)
       <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink v-if="isLogged" to="/profile">My profile</RouterLink>
-        <RouterLink to="/map">Map</RouterLink>
+        <RouterLink v-if="isLogged" to="/map">Map</RouterLink>
       </nav>
     </div>
   </header>
