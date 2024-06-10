@@ -1,4 +1,4 @@
-function init(apiPath) {
+function init(apiPath, map) {
     const loginDiv = document.getElementById('loginDiv');
     loginDiv.classList.remove('hidden');
     const adminDiv = document.getElementById('adminDiv');
@@ -23,6 +23,7 @@ function init(apiPath) {
             const loginDiv = document.getElementById('loginDiv');
             loginDiv.classList.add('hidden');
             adminDiv.classList.remove('hidden');
+            map.invalidateSize();
         }
     }
 

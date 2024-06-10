@@ -39,6 +39,10 @@ function initMap() {
         updateMap([e.latlng.lat, e.latlng.lng], mymap.getZoom());
     });
 
+    mymap.on('zoomend', e => {
+        updateMap([e.target.getCenter().lat, e.target.getCenter().lng], mymap.getZoom());
+    });
+
     return mymap;
 }
 
