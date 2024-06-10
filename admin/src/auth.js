@@ -1,4 +1,4 @@
-function init(apiPath, map) {
+function init(map) {
     const loginDiv = document.getElementById('loginDiv');
     loginDiv.classList.remove('hidden');
     const adminDiv = document.getElementById('adminDiv');
@@ -9,7 +9,7 @@ function init(apiPath, map) {
         body.append('login', 'adm');
         body.append('password', pass);
 
-        const login = await fetch(apiPath + '/user/login', {
+        const login = await fetch('/api/users/user/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',

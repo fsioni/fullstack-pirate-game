@@ -92,7 +92,7 @@ function init(map, apiPath) {
             const lat2 = parseFloat(document.getElementById('lat2').value);
             const lon2 = parseFloat(document.getElementById('lon2').value);
 
-            const rep = await fetch('/admin/zrr', {
+            const rep = await fetch('/game/admin/zrr', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -114,7 +114,7 @@ function init(map, apiPath) {
         const ttl = parseInt(document.getElementById('ttl').value);
 
         // call api
-        const rep = await fetch('/admin/ttl', {
+        const rep = await fetch('/game/admin/ttl', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

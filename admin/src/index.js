@@ -4,9 +4,8 @@ import auth from './auth.js';
 import './css/style.css';
 
 // Api User (tomcat)
-const apiPath = '/api/users';
 
 const mymap = map();
 
 const myform = form(mymap);
-const myauth = auth(apiPath, mymap);
+const myauth = auth(mymap);
