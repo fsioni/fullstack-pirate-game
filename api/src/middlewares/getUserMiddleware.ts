@@ -1,10 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 import UserAuth from '../models/UserAuth';
 import axios from 'axios';
-
+import https from 'https';
 interface RequestWithUser extends Request {
 	user?: UserAuth;
 }
+
+const httpsAgent = new https.Agent({
+    rejectUnauthorized: false
+});
 
 const getUserMiddleware = async (
 	req: RequestWithUser,
@@ -15,11 +19,11 @@ const getUserMiddleware = async (
 		const jwt = req.headers['authorization']?.split(' ')[1];
 		const origin = req.headers['origin'];
 
-		const authServerUrl = 'http://localhost:8080';
-        const completeUrl =  `${authServerUrl}/users/user/authenticate?jwt=${jwt}&origin=${origin}`;
-        // const urlTo = `https://192.168.75.23/api/users/user/authenticate?jwt=${jwt}&origin=${origin}`;
-        console.log(completeUrl);
-		const response = await axios.get(completeUrl);
+		// const authServerUrl = 'http://localhost:8080';
+        // const completeUrl =  `${authServerUrl}/users/user/authenticate?jwt=${jwt}&origin=${origin}`;
+        const urlTo = `https://192.168.75.23/api/users/user/authenticate?jwt=${jwt}&origin=${origin}`;
+        // console.log(completeUrl);
+		const response = await axios.get(urlTo, { httpsAgent });
 
 		if (response.data.user) {
 			req.user = response.data.user;
