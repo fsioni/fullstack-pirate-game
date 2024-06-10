@@ -6,7 +6,7 @@ function init(apiPath, map) {
     async function authenticateAdmin() {
         const pass = document.getElementById('pass').value;
         const body = new URLSearchParams();
-        body.append('login', 'admin');
+        body.append('login', 'adm');
         body.append('password', pass);
 
         const login = await fetch(apiPath + '/user/login', {
