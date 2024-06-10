@@ -4,8 +4,9 @@ import auth from './auth.js';
 import './css/style.css';
 
 // Api User (tomcat)
-const apiPath = 'http://localhost:8080';
+const apiPath = 'http://192.168.75.23:8080/users';
 
 const mymap = map();
+
 const myform = form(mymap);
-const myauth = auth(apiPath);
+const myauth = auth(apiPath, mymap);

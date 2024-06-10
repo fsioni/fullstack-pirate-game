@@ -82,22 +82,22 @@ router.post('/resources/:resourceId', (req: ResourceOperationRequest, res) => {
 	const operationType = req.body.operationType;
 
 	switch (operationType) {
-	case 'grab potion flask':
-		grabPotionFlask(initiator, resource, resourcesOnMap);
-		break;
-	case 'turn villager into pirate':
-		turnVillagerIntoPirate(initiator, resource);
-		break;
-	case 'terminate pirate':
-		terminatePirate(initiator, resource, resourcesOnMap);
-		break;
-	default:
-		res.status(400).json({
-			error: 'Invalid operation',
-			message:
+		case 'grab potion flask':
+			grabPotionFlask(initiator, resource, resourcesOnMap);
+			break;
+		case 'turn villager into pirate':
+			turnVillagerIntoPirate(initiator, resource);
+			break;
+		case 'terminate pirate':
+			terminatePirate(initiator, resource, resourcesOnMap);
+			break;
+		default:
+			res.status(400).json({
+				error: 'Invalid operation',
+				message:
 					'Invalid operation type or resource is not operable by user at this moment',
-		});
-		return;
+			});
+			return;
 	}
 
 	res.status(204).json();
