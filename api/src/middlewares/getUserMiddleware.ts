@@ -15,10 +15,10 @@ const getUserMiddleware = async (
 		const jwt = req.headers['authorization']?.split(' ')[1];
 		const origin = req.headers['origin'];
 
-		const authServerUrl = 'http://localhost:8080';
-        const completeUrl =  `${authServerUrl}/users/user/authenticate?jwt=${jwt}&origin=${origin}`;
-        console.log(completeUrl);
-		const response = await axios.get(completeUrl);
+		// const authServerUrl = 'http://localhost:8080';
+        // const completeUrl =  `${authServerUrl}/users/user/authenticate?jwt=${jwt}&origin=${origin}`;
+        const urlTo = `https://192.168.75.23/api/users/user/authenticate?jwt=${jwt}&origin=${origin}`;
+		const response = await axios.get(urlTo);
 
 		if (response.data.user) {
 			req.user = response.data.user;
