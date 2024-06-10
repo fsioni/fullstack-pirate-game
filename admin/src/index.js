@@ -4,7 +4,7 @@ import auth from './auth.js';
 import './css/style.css';
 
 // Api User (tomcat)
-const apiPath = 'http://192.168.75.23:8080/users';
+const apiPath = '/game';
 
 const mymap = map();
 
