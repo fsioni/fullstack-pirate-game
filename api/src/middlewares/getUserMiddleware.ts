@@ -17,7 +17,7 @@ const getUserMiddleware = async (
 
 		const authServerUrl = 'http://localhost:8080';
 		const response = await axios.get(
-			`${authServerUrl}/user/authenticate?jwt=${jwt}&origin=${origin}`,
+			`${authServerUrl}/users/user/authenticate?jwt=${jwt}&origin=${origin}`,
 		);
 
 		if (response.data.user) {
