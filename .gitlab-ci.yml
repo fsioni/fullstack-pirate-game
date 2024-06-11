@@ -52,8 +52,8 @@ deploy_api:
     - npm run build-only
     - tar cvf build.tar.gz node_modules dist > /dev/null 2>&1
     - scp -o StrictHostKeyChecking=no -i /tmp/deploy_key build.tar.gz gitlabci@192.168.75.23:/home/gitlabci/client/build.tar.gz
-    - ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key gitlabci@192.168.75.23 'sudo mv /home/gitlabci/client/build.tar.gz /usr/share/nginx/app/'
-    - ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key gitlabci@192.168.75.23 "cd /usr/share/nginx/app && sudo tar xvf build.tar.gz > /dev/null 2>&1"
+    - ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key gitlabci@192.168.75.23 'sudo mv /home/gitlabci/client/build.tar.gz /usr/share/nginx/client/'
+    - ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key gitlabci@192.168.75.23 "cd /usr/share/nginx/client && sudo tar xvf build.tar.gz > /dev/null 2>&1"
   after_script:
     - rm -f /tmp/deploy_key
 
