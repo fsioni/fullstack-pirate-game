@@ -158,6 +158,22 @@ function init(map) {
             notif('Erreur lors de l\'ajout de la fiole', 1);
         }
     });
+
+    setImmediate(async () => {
+        const rep = await fetch('/game/api/zrr', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('auth')
+            }
+        });
+        const zrr = await rep.json();
+        const bounds = [
+            [zrr[0][0], zrr[0][1]],
+            [zrr[1][0], zrr[1][1]],
+        ];
+        zoneLayer = L.rectangle(bounds, { color: '#0000ff', weight: 1 }).addTo(mymap);
+    })
 }
 
 export default init;
