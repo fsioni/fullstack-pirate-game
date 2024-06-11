@@ -15,7 +15,7 @@ function getRandomPositionInZrr(): Position {
 	const randomLat = Math.random() * (bottomRightLat - topLeftLat) + topLeftLat;
 	const randomLng = Math.random() * (bottomRightLng - topLeftLng) + topLeftLng;
 
-	return [randomLat, randomLng];
+	return { x: randomLat, y: randomLng };
 }
 
 function createNewFlaskAtPosition(
