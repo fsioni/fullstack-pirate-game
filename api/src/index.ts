@@ -2,10 +2,12 @@ import express, { Request, Response } from 'express';
 import gameRouter from './routes/game/router';
 import adminRouter from './routes/admin/router';
 import getUserMiddleware from './middlewares/getUserMiddleware';
+import cors from 'cors';
 
 const app = express();
 const port = 3376;
 
+app.options('*', cors())
 app.use(express.json());
 app.use('/static', express.static('public'));
 
