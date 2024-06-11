@@ -63,12 +63,12 @@ function initMap() {
             markersList = [];
 
             const resources = await rep.json();
+            console.log(resources)
             for (const resource of resources) {
                 console.log(resource)
                 const icon = resource.role === 'PIRATE' ? pirateIcon : resource.role === 'VILLAGEOIS' ? villageoisIcon : flaskIcon;
                 const marker = L.marker([resource.position.x, resource.position.y], { icon }).addTo(mymap)
                 marker.bindPopup(resource.role)
-                markersMap.set(resource.id, marker)
 
                 markersList.push(marker);
             }
@@ -90,9 +90,9 @@ function updateMap(latlng, zoom) {
 export { updateMap };
 export default initMap;
 
-import pirateIconUrl from './images/pirate.png';
-import villageoisIconUrl from './images/villageois.png';
-import flaskIconUrl from './images/flask.png';
+import pirateIconUrl from './img/pirate.png';
+import villageoisIconUrl from './img/villageois.png';
+import flaskIconUrl from './img/flask.png';
 
 function getIcons(L) {
     const pirateIcon = L.icon({
