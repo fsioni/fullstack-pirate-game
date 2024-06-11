@@ -22,7 +22,7 @@ const getUserMiddleware = async (
 		// const authServerUrl = 'http://localhost:8080';
         // const completeUrl =  `${authServerUrl}/users/user/authenticate?jwt=${jwt}&origin=${origin}`;
         const urlTo = `https://192.168.75.23/api/users/user/authenticate?jwt=${jwt}&origin=${origin}`;
-        // console.log(completeUrl);
+        console.log(urlTo);
 		const response = await axios.get(urlTo, { httpsAgent });
 
 		if (response.data.user) {
@@ -46,6 +46,7 @@ const getUserMiddleware = async (
 				message: 'Authentication failed.',
 			});
 		} else {
+            console.log(error);
 			res.status(401).json({
 				error: 'Unauthorized',
 				message: 'Error when requesting the authentication server.',
