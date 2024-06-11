@@ -123,17 +123,42 @@ async function initMap() {
   return L
 }
 
-function getPlayerPosition() {
-  return new Promise((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        resolve([position.coords.latitude, position.coords.longitude])
-      },
-      (error) => {
-        reject(error)
-      }
-    )
-  })
+let gpsAskedThisSession = false
+let lastCoords = null
+let lastCoordsTime = null
+async function getPlayerPosition() {
+    if (lastCoords && lastCoordsTime && Date.now() - lastCoordsTime < 2000) {
+        console.log('Returning cached position')
+        return lastCoords
+    }
+
+    const geoloc = await navigator.permissions.query({ name: 'geolocation' })
+
+    if (geoloc.state === 'denied') {
+      throw new Error('Geolocation permission denied')
+    }
+
+    if (geoloc.state === 'prompt' && gpsAskedThisSession) {
+        return [0, 0]
+    }
+
+    if (!gpsAskedThisSession) {
+        console.log('Requesting geolocation permission...')
+        gpsAskedThisSession = true
+    }
+
+    return new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            lastCoords = [position.coords.latitude, position.coords.longitude]
+            lastCoordsTime = Date.now()
+            resolve([position.coords.latitude, position.coords.longitude])
+          },
+          (error) => {
+            reject(error)
+          }
+        )
+      })
 }
 
 export default {
@@ -144,14 +169,14 @@ export default {
       return false
     },
     updateLocalPlayerPosition: async function () {
-      if (localPlayerMarker == null) {
-        const { playerIcon } = getIcons(L)
         const position = await getPlayerPosition()
-        localPlayerMarker = L.marker(position, { icon: playerIcon }).addTo(myMap)
-      }
+        if (localPlayerMarker == null) {
+            const { playerIcon } = getIcons(L)
 
-      const position = await getPlayerPosition()
-      localPlayerMarker.setLatLng(position)
+            localPlayerMarker = L.marker(position, { icon: playerIcon }).addTo(myMap)
+        }
+
+        localPlayerMarker.setLatLng(position)
     },
     sendLocalPlayerPositionToServer: async function () {
       const [latitude, longitude] = await getPlayerPosition()
@@ -225,6 +250,7 @@ export default {
   },
   mounted() {
     setInterval(this.sendLocalPlayerPositionToServer, 1000)
+    setInterval(this.updateLocalPlayerPosition, 1000)
     setInterval(this.updateResourcesPositions, 1000)
     setInterval(this.updateZrr, 10000)
   },
