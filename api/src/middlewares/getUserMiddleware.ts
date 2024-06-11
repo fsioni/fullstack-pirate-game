@@ -43,6 +43,7 @@ const getUserMiddleware = async (
                         piratesTerminated: 0,
                         villagersTurned: 0,
                     },
+                    nearbyResources: [],
                 };
             }
 		} else {

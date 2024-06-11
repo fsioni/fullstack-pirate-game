@@ -1,5 +1,5 @@
 import { PlayerRequestParam } from './interfaces';
-import { GameResource, Position } from '../../models/GameResource';
+import { GameResource, Position, PlayerResource } from '../../models/GameResource';
 
 const DEFAULT_PLAYER_ROLE = 'VILLAGEOIS';
 const MAX_DISTANCE_TO_INTERACT = 5;
@@ -10,13 +10,34 @@ function getRessources(
 ) {
 	const res = [];
 	for (const r in resources) {
+        let ressToAdd = resources[r];
 		//only the list of potions + only the other players of his/her team.
 		if (resources[r].role === 'FLASK' || resources[r].role === player.role || player.role === 'ADMIN') {
-			res.push(resources[r]);
+            // Get list of nearby resources of this resource if it's a player
+            if (resources[r].role !== 'FLASK') {
+                ressToAdd = resources[r] as PlayerResource;
+                ressToAdd.nearbyResources = getNearbyResources(resources, resources[r]);
+            }
+			res.push(ressToAdd);
 		}
 	}
 
 	return res;
+}
+
+function getNearbyResources(
+    resources: { [key: string]: GameResource },
+    resource: GameResource,
+) {
+    const nearbyResources = [];
+
+    for (const r in resources) {
+        if (resources[r].id !== resource.id && isNearby(resource.position, resources[r].position)) {
+            nearbyResources.push(resources[r]);
+        }
+    }
+
+    return nearbyResources;
 }
 
 function getPlayerByLogin(
@@ -41,6 +62,7 @@ function createNewPlayerAtPosition(
 			piratesTerminated: 0,
 			villagersTurned: 0,
 		},
+        nearbyResources: [],
 	};
 }
 

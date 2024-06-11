@@ -15,6 +15,7 @@ interface PlayerResource extends BaseResource {
 	role: 'VILLAGEOIS' | 'PIRATE' | 'ADMIN';
 	flasks: FlaskResource[];
 	statistics: PlayerStatistics;
+    nearbyResources: GameResource[];
 }
 
 interface FlaskResource extends BaseResource {
@@ -24,4 +25,4 @@ interface FlaskResource extends BaseResource {
 
 type GameResource = PlayerResource | FlaskResource;
 
-export { GameResource, Position };
+export { GameResource, Position, PlayerResource };
