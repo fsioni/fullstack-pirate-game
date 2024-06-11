@@ -1,7 +1,7 @@
 var mymap = null;
 var zoneLayer = null;
 
-function init(map, apiPath) {
+function init(map) {
     mymap = map;
 
     // ==================
@@ -122,6 +122,25 @@ function init(map, apiPath) {
             },
             body: JSON.stringify({
                 ttl: ttl,
+            }),
+        });
+
+        console.log(rep);
+    });
+
+    // Add fiole
+    document.getElementById('sendFioleButton').addEventListener('click', async function () {
+        console.log('sendFioleButton');
+        // call api
+        const rep = await fetch('/game/admin/potion', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'authorization': 'Bearer ' + localStorage.getItem('auth'),
+            },
+            body: JSON.stringify({
+                lat: lat,
+                lon: lon,
             }),
         });
 
