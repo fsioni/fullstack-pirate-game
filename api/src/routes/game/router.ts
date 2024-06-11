@@ -15,7 +15,7 @@ import { resourcesOnMap, zrr } from '../../models/GameState';
 const router = express.Router();
 
 // Get all game resources positions (only who need to be showed)
-router.get('/resources', (req: RequestWithUser, res) => {
+const ressourceRep = (req: RequestWithUser, res : any) => {
 	if (!req.user) {
 		res.status(401).json({
 			error: 'Unauthorized',
@@ -37,7 +37,9 @@ router.get('/resources', (req: RequestWithUser, res) => {
 	const resources = getRessources(player, resourcesOnMap);
 
 	res.json(resources);
-});
+}
+router.get('/resources', ressourceRep);
+router.post('/resources', ressourceRep);
 
 // Take a ressource
 router.post('/resources/:resourceId', (req: ResourceOperationRequest, res) => {
