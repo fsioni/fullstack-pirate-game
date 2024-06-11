@@ -106,7 +106,7 @@ function init(map) {
                 }),
             });
 
-            if (rep.status === 200) {
+            if (rep.status === 204) {
                 notif('Zrr modifiée');
             } else {
                 notif('Erreur lors de la modification de la zrr', 1);
@@ -129,7 +129,7 @@ function init(map) {
             }),
         });
 
-        if (rep.status === 200) {
+        if (rep.status === 204) {
             notif('Ttl modifié');
         } else {
             notif('Erreur lors de la modification du ttl', 1);
@@ -152,7 +152,7 @@ function init(map) {
             }),
         });
 
-        if (rep.status === 200) {
+        if (rep.status === 201) {
             notif('Fiole ajoutée');
         } else {
             notif('Erreur lors de l\'ajout de la fiole', 1);
