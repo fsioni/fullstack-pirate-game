@@ -111,3 +111,29 @@ label:not(.first) {
 .hidden {
     display: none;
 }
+
+#notifications {
+    position: fixed;
+    top: 0;
+    right: 0;
+    padding-right: 10px;
+}
+
+.notification {
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: solid 2px;
+    margin-top: 10px;
+}
+
+.error {
+    background-color: #f44336;
+    border-color: #972b24;
+    color: white;
+}
+
+.success {
+    background-color: #4CAF50;
+    border-color: #2d6a2f;
+    color: white;
+}
