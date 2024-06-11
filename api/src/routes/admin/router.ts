@@ -1,9 +1,9 @@
 import express from 'express';
 import adminOnlyMiddleware from '../../middlewares/adminOnlyMiddleware';
 import { Zrr } from '../../models/zrr';
-import { setTtl, setZrr, ttl, zrr } from '../../models/GameState';
+import { setTtl, setZrr, ttl, zrr, resourcesOnMap } from '../../models/GameState';
 import { Position } from '../../models/GameResource';
-import { getRandomPositionInZrr } from './service';
+import { getRandomPositionInZrr, createNewFlaskAtPosition } from './service';
 
 const router = express.Router();
 
@@ -45,6 +45,8 @@ router.post('/potion', (req, res) => {
 	if (!position) {
 		position = getRandomPositionInZrr();
 	}
+
+    createNewFlaskAtPosition(resourcesOnMap, position);
 
 	res.status(201).json({
 		position,
