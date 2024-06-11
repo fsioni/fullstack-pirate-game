@@ -21,7 +21,7 @@ const getUserMiddleware = async (
 
 		// const authServerUrl = 'http://localhost:8080';
         // const completeUrl =  `${authServerUrl}/users/user/authenticate?jwt=${jwt}&origin=${origin}`;
-        const urlTo = `https://192.168.75.23/api/users/user/authenticate?jwt=${jwt}&origin=${origin}`;
+        const urlTo = `http://192.168.75.23:8080/users/user/authenticate?jwt=${jwt}&origin=${origin}`;
         console.log(urlTo);
 		const response = await axios.get(urlTo, { httpsAgent });
 
