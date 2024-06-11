@@ -1,10 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 import UserAuth from '../models/UserAuth';
 import axios from 'axios';
-
+import https from 'https';
 interface RequestWithUser extends Request {
 	user?: UserAuth;
 }
+
+const httpsAgent = new https.Agent({
+    rejectUnauthorized: false
+});
 
 const getUserMiddleware = async (
 	req: RequestWithUser,
@@ -18,7 +22,8 @@ const getUserMiddleware = async (
 		// const authServerUrl = 'http://localhost:8080';
         // const completeUrl =  `${authServerUrl}/users/user/authenticate?jwt=${jwt}&origin=${origin}`;
         const urlTo = `https://192.168.75.23/api/users/user/authenticate?jwt=${jwt}&origin=${origin}`;
-		const response = await axios.get(urlTo);
+        console.log(urlTo);
+		const response = await axios.get(urlTo, { httpsAgent });
 
 		if (response.data.user) {
 			req.user = response.data.user;
@@ -41,6 +46,7 @@ const getUserMiddleware = async (
 				message: 'Authentication failed.',
 			});
 		} else {
+            console.log(error);
 			res.status(401).json({
 				error: 'Unauthorized',
 				message: 'Error when requesting the authentication server.',
