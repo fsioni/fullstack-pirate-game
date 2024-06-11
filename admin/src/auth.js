@@ -4,6 +4,7 @@ function init(map) {
     const adminDiv = document.getElementById('adminDiv');
 
     async function authenticateAdmin() {
+        notif('Authentification en cours...');
         const pass = document.getElementById('pass').value;
         const body = new URLSearchParams();
         body.append('login', 'adm');
@@ -24,6 +25,9 @@ function init(map) {
             loginDiv.classList.add('hidden');
             adminDiv.classList.remove('hidden');
             map.invalidateSize();
+            notif('Authentification réussie');
+        } else {
+            notif('Erreur lors de l\'authentification', 1);
         }
     }
 

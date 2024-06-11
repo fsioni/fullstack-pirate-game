@@ -1,7 +1,7 @@
 var mymap = null;
 var zoneLayer = null;
 
-function init(map, apiPath) {
+function init(map) {
     mymap = map;
 
     // ==================
@@ -106,7 +106,11 @@ function init(map, apiPath) {
                 }),
             });
 
-            console.log(rep);
+            if (rep.status === 204) {
+                notif('Zrr modifiée');
+            } else {
+                notif('Erreur lors de la modification de la zrr', 1);
+            }
         });
 
     // SEND TTL
@@ -125,7 +129,34 @@ function init(map, apiPath) {
             }),
         });
 
-        console.log(rep);
+        if (rep.status === 204) {
+            notif('Ttl modifié');
+        } else {
+            notif('Erreur lors de la modification du ttl', 1);
+        }
+    });
+
+    // Add fiole
+    document.getElementById('sendFioleButton').addEventListener('click', async function () {
+        console.log('sendFioleButton');
+        // call api
+        const rep = await fetch('/game/admin/potion', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'authorization': 'Bearer ' + localStorage.getItem('auth'),
+            },
+            body: JSON.stringify({
+                lat: lat,
+                lon: lon,
+            }),
+        });
+
+        if (rep.status === 201) {
+            notif('Fiole ajoutée');
+        } else {
+            notif('Erreur lors de l\'ajout de la fiole', 1);
+        }
     });
 }
 

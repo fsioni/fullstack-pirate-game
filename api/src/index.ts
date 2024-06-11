@@ -2,15 +2,15 @@ import express, { Request, Response } from 'express';
 import gameRouter from './routes/game/router';
 import adminRouter from './routes/admin/router';
 import getUserMiddleware from './middlewares/getUserMiddleware';
-import corsMiddleware from './middlewares/corsMiddleware';
+import cors from 'cors';
 
 const app = express();
 const port = 3376;
 
+// Enable CORS allow all origins
+app.use(cors());
 app.use(express.json());
 app.use('/static', express.static('public'));
-
-app.use(corsMiddleware);
 
 app.get('/', (req: Request, res: Response) => {
 	res.redirect('/static/index.html');

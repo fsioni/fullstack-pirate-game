@@ -1,5 +1,5 @@
 import { PlayerRequestParam } from './interfaces';
-import { GameResource, Position } from '../../models/GameResource';
+import { GameResource, Position, PlayerResource } from '../../models/GameResource';
 
 const DEFAULT_PLAYER_ROLE = 'VILLAGEOIS';
 const MAX_DISTANCE_TO_INTERACT = 5;
@@ -10,13 +10,39 @@ function getRessources(
 ) {
 	const res = [];
 	for (const r in resources) {
+        // Copy the resource to avoid modifying the original resource
+        let ressToAdd = { ...resources[r] };
 		//only the list of potions + only the other players of his/her team.
-		if (resources[r].role === 'FLASK' || resources[r].role === player.role) {
-			res.push(resources[r]);
+		if (resources[r].role === 'FLASK' || resources[r].role === player.role || player.role === 'ADMIN') {
+            // if ressource id is not the player id we don't do the nearbyResources
+            if (resources[r].id === player.id) {
+                // Get list of nearby resources of this resource if it's a player
+                if (resources[r].role !== 'FLASK') {
+                    ressToAdd = { ...ressToAdd, nearbyResources: [] } as PlayerResource;
+                    ressToAdd.nearbyResources = getNearbyResources(resources, resources[r]);
+                }
+            }
+			res.push(ressToAdd);
 		}
 	}
 
 	return res;
+}
+
+function getNearbyResources(
+    resources: { [key: string]: GameResource },
+    resource: GameResource,
+) {
+    const nearbyResources = [];
+
+    for (const r in resources) {
+        if (resources[r].id !== resource.id && isNearby(resource.position, resources[r].position)) {
+            // On met des copies des ressources pour éviter de modifier les ressources originales
+            nearbyResources.push({ ...resources[r], nearbyResources: []});
+        }
+    }
+
+    return nearbyResources;
 }
 
 function getPlayerByLogin(
@@ -41,6 +67,7 @@ function createNewPlayerAtPosition(
 			piratesTerminated: 0,
 			villagersTurned: 0,
 		},
+        nearbyResources: [],
 	};
 }
 
@@ -130,8 +157,10 @@ function terminatePirate(
 function isNearby(position1: Position, position2: Position): boolean {
 	const RADIUS_OF_EARTH = 6371e3; // Rayon de la Terre en mètres
 
-	const [lat1, lon1] = position1.map(degrees => (degrees * Math.PI) / 180);
-	const [lat2, lon2] = position2.map(degrees => (degrees * Math.PI) / 180);
+	const lat1 = position1.y * (Math.PI / 180);
+	const lon1 = position1.x * (Math.PI / 180);
+	const lat2 = position2.y * (Math.PI / 180);
+	const lon2 = position2.x * (Math.PI / 180);
 
 	const deltaLat = lat2 - lat1;
 	const deltaLon = lon2 - lon1;
