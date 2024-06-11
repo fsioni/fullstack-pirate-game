@@ -20,6 +20,7 @@ const getUserMiddleware = async (
 	try {
 		const jwt = req.headers['authorization']?.split(' ')[1];
 		const origin = req.headers['origin'];
+        console.log(req.path, req.url, jwt, origin);
 
 		// const authServerUrl = 'http://localhost:8080';
         // const completeUrl =  `${authServerUrl}/users/user/authenticate?jwt=${jwt}&origin=${origin}`;
