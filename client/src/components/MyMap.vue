@@ -7,7 +7,6 @@
 
 <script>
 import 'leaflet/dist/leaflet.css'
-import { flasks, localPlayer, players, zrr } from '@/mocks/mockPositions.ts'
 import pirateIconUrl from '@/assets/images/pirate.png'
 import villageoisIconUrl from '@/assets/images/villageois.png'
 import flaskIconUrl from '@/assets/images/flask.png'
@@ -18,6 +17,12 @@ let lat = 45.782,
   zoom = 19
 let myMap = {}
 let localPlayerMarker = null
+
+let L = null
+let zrrLayer = null
+
+let playerMarkers = new Map()
+let flaskMarkers = new Map()
 
 function getIcons(L) {
   const pirateIcon = L.icon({
@@ -51,29 +56,44 @@ function getIcons(L) {
   return { pirateIcon, villageoisIcon, flaskIcon, playerIcon }
 }
 
-function addResourcesToMap(L) {
-  const { pirateIcon, villageoisIcon, flaskIcon, playerIcon } = getIcons(L)
+function updateMarkers(data, markersMap, icon) {
+  // Suppression des marqueurs qui ne sont plus présents
+  for (const id of markersMap.keys()) {
+    if (!data.some((resource) => resource.id === id)) {
+      myMap.removeLayer(markersMap.get(id))
+      markersMap.delete(id)
+    }
+  }
 
-  players.forEach((player) => {
-    const icon = player.role === 'PIRATE' ? pirateIcon : villageoisIcon
-    L.marker(player.position, { icon })
-      .addTo(myMap)
-      .bindPopup(`Joueur ${player.id} : ${player.role}`)
+  // Ajout ou mise à jour des marqueurs
+  data.forEach((resource) => {
+    if (resource.id === localStorage.getItem('login')) {
+      return
+    }
+
+    let marker = markersMap.get(resource.id)
+    if (marker) {
+      marker.setLatLng([resource.position.x, resource.position.y])
+      console.log('update', resource.id)
+    } else {
+      console.log('add', resource.id)
+      marker = L.marker([resource.position.x, resource.position.y], { icon }).addTo(myMap)
+      marker.bindPopup(resource.role)
+      markersMap.set(resource.id, marker)
+    }
   })
+}
 
-  flasks.forEach((flask) => {
-    L.marker(flask.position, {
-      icon: flaskIcon
-    })
-      .addTo(myMap)
-      .bindPopup(`Flacon ${flask.id}`)
-  })
+function addResourcesToMap(data) {
+  const { pirateIcon, villageoisIcon, flaskIcon } = getIcons(L)
 
-  L.marker(localPlayer.position, { icon: playerIcon })
-    .addTo(myMap)
-    .bindPopup(`Local Player : ${localPlayer.role}`)
+  const pirates = data.filter((resource) => resource.role === 'PIRATE')
+  const villageois = data.filter((resource) => resource.role === 'VILLAGEOIS')
+  const flasks = data.filter((resource) => resource.role === 'FLASK')
 
-  L.rectangle(zrr, { color: 'blue', weight: 1 }).addTo(myMap)
+  updateMarkers(pirates, playerMarkers, pirateIcon)
+  updateMarkers(villageois, playerMarkers, villageoisIcon)
+  updateMarkers(flasks, flaskMarkers, flaskIcon)
 }
 
 async function initMap() {
@@ -103,6 +123,19 @@ async function initMap() {
   return L
 }
 
+function getPlayerPosition() {
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        resolve([position.coords.latitude, position.coords.longitude])
+      },
+      (error) => {
+        reject(error)
+      }
+    )
+  })
+}
+
 export default {
   name: 'MyMap',
   methods: {
@@ -110,14 +143,21 @@ export default {
       myMap.setView([lat, lng], zoom)
       return false
     },
-    updateLocalPlayerPosition: function (newPosition) {
-      localPlayer.position = newPosition
+    updateLocalPlayerPosition: async function () {
+      if (localPlayerMarker == null) {
+        const { playerIcon } = getIcons(L)
+        const position = await getPlayerPosition()
+        localPlayerMarker = L.marker(position, { icon: playerIcon }).addTo(myMap)
+      }
 
-      localPlayerMarker.setLatLng(newPosition)
+      const position = await getPlayerPosition()
+      localPlayerMarker.setLatLng(position)
     },
-    sendLocalPlayerPositionToServer: function () {
-      const [latitude, longitude] = localPlayer.position
-      const positionData = JSON.stringify({ position: { x: latitude, y: longitude } })
+    sendLocalPlayerPositionToServer: async function () {
+      const [latitude, longitude] = await getPlayerPosition()
+      const positionData = JSON.stringify({
+        position: { x: latitude, y: longitude }
+      })
 
       const playerLogin = window.localStorage.getItem('login')
       const token = window.localStorage.getItem('token')
@@ -131,10 +171,48 @@ export default {
         body: positionData
       })
         .then((response) => response.json())
-        .then((data) => console.log(data))
         .catch((error) => {
           console.error('Error:', error)
         })
+    },
+    updateResourcesPositions: async function () {
+      const token = window.localStorage.getItem('token')
+      const url = import.meta.env.VITE_GAME_API_URL + '/resources'
+      try {
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        })
+        const data = await response.json()
+        addResourcesToMap(data)
+      } catch (error) {
+        console.error('Error:', error)
+      }
+    },
+    updateZrr: async function () {
+      const token = window.localStorage.getItem('token')
+      const url = import.meta.env.VITE_GAME_API_URL + '/zrr'
+      try {
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        })
+        const data = await response.json()
+
+        if (zrrLayer) {
+          myMap.removeLayer(zrrLayer)
+        }
+
+        zrrLayer = L.rectangle(data, { color: 'blue', weight: 1 }).addTo(myMap)
+      } catch (error) {
+        console.error('Error:', error)
+      }
     }
   },
   beforeRouteEnter(to, from, next) {
@@ -146,13 +224,16 @@ export default {
     }
   },
   mounted() {
-    setInterval(this.sendLocalPlayerPositionToServer, 5000)
+    setInterval(this.sendLocalPlayerPositionToServer, 1000)
+    setInterval(this.updateResourcesPositions, 1000)
+    setInterval(this.updateZrr, 10000)
   },
   async beforeMount() {
     console.log('Loading Leaflet...')
-    const L = await initMap()
-
-    addResourcesToMap(L)
+    L = await initMap()
+    await this.updateResourcesPositions()
+    await this.updateZrr()
+    await this.updateLocalPlayerPosition()
 
     myMap.on('click', (e) => {
       lat = e.latlng.lat
