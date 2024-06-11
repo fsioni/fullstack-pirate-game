@@ -11,7 +11,7 @@ function getRessources(
 	const res = [];
 	for (const r in resources) {
 		//only the list of potions + only the other players of his/her team.
-		if (resources[r].role === 'FLASK' || resources[r].role === player.role) {
+		if (resources[r].role === 'FLASK' || resources[r].role === player.role || player.role === 'ADMIN') {
 			res.push(resources[r]);
 		}
 	}
@@ -130,8 +130,10 @@ function terminatePirate(
 function isNearby(position1: Position, position2: Position): boolean {
 	const RADIUS_OF_EARTH = 6371e3; // Rayon de la Terre en mètres
 
-	const [lat1, lon1] = position1.map(degrees => (degrees * Math.PI) / 180);
-	const [lat2, lon2] = position2.map(degrees => (degrees * Math.PI) / 180);
+	const lat1 = position1.x * (Math.PI / 180);
+    const lon1 = position1.y * (Math.PI / 180);
+    const lat2 = position2.x * (Math.PI / 180);
+    const lon2 = position2.y * (Math.PI / 180);
 
 	const deltaLat = lat2 - lat1;
 	const deltaLon = lon2 - lon1;
