@@ -2,6 +2,8 @@ import { NextFunction, Request, Response } from 'express';
 import UserAuth from '../models/UserAuth';
 import axios from 'axios';
 import https from 'https';
+import { resourcesOnMap } from '../models/GameState';
+
 interface RequestWithUser extends Request {
 	user?: UserAuth;
 }
@@ -26,7 +28,11 @@ const getUserMiddleware = async (
 		const response = await axios.get(urlTo, { httpsAgent });
 
 		if (response.data.user) {
-			req.user = response.data.user;
+			req.user = response.data.user as UserAuth;
+            console.log(req.user);
+            if (req.user && resourcesOnMap[req.user.login] === undefined) {
+                resourcesOnMap[req.user.login].role = req.user.species;
+            }
 		} else {
 			res.status(401).json({
 				error: 'Unauthorized',
