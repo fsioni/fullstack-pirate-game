@@ -31,7 +31,20 @@ const getUserMiddleware = async (
 			req.user = response.data.user as UserAuth;
             console.log(req.user);
             if (req.user && resourcesOnMap[req.user.login] === undefined) {
-                resourcesOnMap[req.user.login].role = req.user.species;
+                resourcesOnMap[req.user.login] = {
+                    id: req.user.login,
+                    role: req.user.species,
+                    position: {
+                        x: 0,
+                        y: 0,
+                    },
+                    flasks: [],
+                    statistics: {
+                        flasksGathered: 0,
+                        piratesTerminated: 0,
+                        villagersTurned: 0,
+                    },
+                };
             }
 		} else {
 			res.status(401).json({
