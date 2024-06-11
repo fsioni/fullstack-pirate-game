@@ -159,7 +159,7 @@ function init(map) {
         }
     });
 
-    setImmediate(async () => {
+    setTimeout(async () => {
         const rep = await fetch('/game/api/zrr', {
             method: 'POST',
             headers: {
@@ -173,7 +173,7 @@ function init(map) {
             [zrr[1][0], zrr[1][1]],
         ];
         zoneLayer = L.rectangle(bounds, { color: '#0000ff', weight: 1 }).addTo(mymap);
-    })
+    }, 1000);
 }
 
 export default init;
