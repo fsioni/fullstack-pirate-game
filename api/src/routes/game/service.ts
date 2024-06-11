@@ -14,10 +14,13 @@ function getRessources(
         let ressToAdd = { ...resources[r] };
 		//only the list of potions + only the other players of his/her team.
 		if (resources[r].role === 'FLASK' || resources[r].role === player.role || player.role === 'ADMIN') {
-            // Get list of nearby resources of this resource if it's a player
-            if (resources[r].role !== 'FLASK') {
-                ressToAdd = { ...ressToAdd, nearbyResources: [] } as PlayerResource;
-                ressToAdd.nearbyResources = getNearbyResources(resources, resources[r]);
+            // if ressource id is not the player id we don't do the nearbyResources
+            if (resources[r].id === player.id) {
+                // Get list of nearby resources of this resource if it's a player
+                if (resources[r].role !== 'FLASK') {
+                    ressToAdd = { ...ressToAdd, nearbyResources: [] } as PlayerResource;
+                    ressToAdd.nearbyResources = getNearbyResources(resources, resources[r]);
+                }
             }
 			res.push(ressToAdd);
 		}
