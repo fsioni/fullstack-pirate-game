@@ -116,5 +116,5 @@ function getIcons(L) {
         popupAnchor: [0, -32]
     })
 
-    return { pirateIcon, villageoisIcon, flaskIcon, playerIcon }
+    return { pirateIcon, villageoisIcon, flaskIcon }
 }
