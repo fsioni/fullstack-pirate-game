@@ -47,11 +47,12 @@ function initMap() {
     setInterval(async () => {
         if (!localStorage.getItem('auth')) return;
         // Récupération des ressources
+        const baseUrl = window.location.origin;
         const rep = await fetch('/game/api/resources', {
-            method: 'GET',
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('auth')}`
+                Authorization: `Bearer ${localStorage.getItem('auth')}`,
             }
         });
 
