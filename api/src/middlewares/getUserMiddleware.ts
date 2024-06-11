@@ -29,7 +29,6 @@ const getUserMiddleware = async (
 
 		if (response.data.user) {
 			req.user = response.data.user as UserAuth;
-            console.log(req.user);
             if (req.user && resourcesOnMap[req.user.login] === undefined) {
                 resourcesOnMap[req.user.login] = {
                     id: req.user.login,
@@ -44,6 +43,7 @@ const getUserMiddleware = async (
                         piratesTerminated: 0,
                         villagersTurned: 0,
                     },
+                    nearbyResources: [],
                 };
             }
 		} else {
