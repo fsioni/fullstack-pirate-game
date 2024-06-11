@@ -106,7 +106,11 @@ function init(map) {
                 }),
             });
 
-            console.log(rep);
+            if (rep.status === 200) {
+                notif('Zrr modifiée');
+            } else {
+                notif('Erreur lors de la modification de la zrr', 1);
+            }
         });
 
     // SEND TTL
@@ -125,7 +129,11 @@ function init(map) {
             }),
         });
 
-        console.log(rep);
+        if (rep.status === 200) {
+            notif('Ttl modifié');
+        } else {
+            notif('Erreur lors de la modification du ttl', 1);
+        }
     });
 
     // Add fiole
@@ -144,7 +152,11 @@ function init(map) {
             }),
         });
 
-        console.log(rep);
+        if (rep.status === 200) {
+            notif('Fiole ajoutée');
+        } else {
+            notif('Erreur lors de l\'ajout de la fiole', 1);
+        }
     });
 }
 

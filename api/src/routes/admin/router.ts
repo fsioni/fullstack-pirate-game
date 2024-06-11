@@ -38,7 +38,7 @@ router.post('/potion', (req, res) => {
 	let position: Position = req.body.position;
 
 	if (zrr === null) {
-		res.status(400).send('Zrr is not defined yet');
+		res.status(400).json({err:'Zrr is not defined yet'});
 		return;
 	}
 
