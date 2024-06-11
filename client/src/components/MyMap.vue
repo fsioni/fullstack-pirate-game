@@ -222,7 +222,7 @@ export default {
       const url = import.meta.env.VITE_GAME_API_URL + '/zrr'
       try {
         const response = await fetch(url, {
-          method: 'GET',
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
