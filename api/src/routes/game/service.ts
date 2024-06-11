@@ -10,12 +10,13 @@ function getRessources(
 ) {
 	const res = [];
 	for (const r in resources) {
-        let ressToAdd = resources[r];
+        // Copy the resource to avoid modifying the original resource
+        let ressToAdd = { ...resources[r] };
 		//only the list of potions + only the other players of his/her team.
 		if (resources[r].role === 'FLASK' || resources[r].role === player.role || player.role === 'ADMIN') {
             // Get list of nearby resources of this resource if it's a player
             if (resources[r].role !== 'FLASK') {
-                ressToAdd = resources[r] as PlayerResource;
+                ressToAdd = { ...ressToAdd, nearbyResources: [] } as PlayerResource;
                 ressToAdd.nearbyResources = getNearbyResources(resources, resources[r]);
             }
 			res.push(ressToAdd);
@@ -33,7 +34,8 @@ function getNearbyResources(
 
     for (const r in resources) {
         if (resources[r].id !== resource.id && isNearby(resource.position, resources[r].position)) {
-            nearbyResources.push(resources[r]);
+            // On met des copies des ressources pour éviter de modifier les ressources originales
+            nearbyResources.push({ ...resources[r], nearbyResources: []});
         }
     }
 
@@ -152,10 +154,10 @@ function terminatePirate(
 function isNearby(position1: Position, position2: Position): boolean {
 	const RADIUS_OF_EARTH = 6371e3; // Rayon de la Terre en mètres
 
-	const lat1 = position1.x * (Math.PI / 180);
-    const lon1 = position1.y * (Math.PI / 180);
-    const lat2 = position2.x * (Math.PI / 180);
-    const lon2 = position2.y * (Math.PI / 180);
+	const lat1 = position1.y * (Math.PI / 180);
+	const lon1 = position1.x * (Math.PI / 180);
+	const lat2 = position2.y * (Math.PI / 180);
+	const lon2 = position2.x * (Math.PI / 180);
 
 	const deltaLat = lat2 - lat1;
 	const deltaLon = lon2 - lon1;
