@@ -128,7 +128,7 @@ router.put('/resources/:playerLogin/position', (req, res) => {
 });
 
 // Get zrr boundaries
-router.get('/zrr', (req, res) => {
+const zrrRep = (req:any, res:any) => {
 	if (zrr === null) {
 		res.status(404).json({
 			error: 'Not found',
@@ -138,6 +138,9 @@ router.get('/zrr', (req, res) => {
 	}
 
 	res.json(zrr);
-});
+}
+router.get('/zrr', zrrRep);
+router.post('/zrr', zrrRep);
+
 
 export default router;
