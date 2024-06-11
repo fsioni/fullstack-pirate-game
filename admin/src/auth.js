@@ -2,6 +2,7 @@ function init(map) {
     const loginDiv = document.getElementById('loginDiv');
     loginDiv.classList.remove('hidden');
     const adminDiv = document.getElementById('adminDiv');
+    localStorage.removeItem('auth');
 
     async function authenticateAdmin() {
         notif('Authentification en cours...');

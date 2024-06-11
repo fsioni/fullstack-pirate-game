@@ -42,6 +42,38 @@ function initMap() {
     mymap.on('zoomend', e => {
         updateMap([e.target.getCenter().lat, e.target.getCenter().lng], mymap.getZoom());
     });
+    var markersList = [];
+    const { pirateIcon, villageoisIcon, flaskIcon } = getIcons(L)
+    setInterval(async () => {
+        if (!localStorage.getItem('auth')) return;
+        // Récupération des ressources
+        const rep = await fetch('/game/resources/', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'authorization': 'Bearer ' + localStorage.getItem('auth'),
+            }
+        });
+
+        if (rep.status === 200) {
+            // Suppression des anciens markers
+            for (const marker of markersList) {
+                marker.remove();
+            }
+            markersList = [];
+
+            const resources = await rep.json();
+            for (const resource of resources) {
+                console.log(resource)
+                const icon = resource.role === 'PIRATE' ? pirateIcon : resource.role === 'VILLAGEOIS' ? villageoisIcon : flaskIcon;
+                const marker = L.marker([resource.position.x, resource.position.y], { icon }).addTo(mymap)
+                marker.bindPopup(resource.role)
+                markersMap.set(resource.id, marker)
+
+                markersList.push(marker);
+            }
+        }
+    }, 1000);
 
     return mymap;
 }
@@ -57,3 +89,32 @@ function updateMap(latlng, zoom) {
 
 export { updateMap };
 export default initMap;
+
+import pirateIconUrl from './images/pirate.png';
+import villageoisIconUrl from './images/villageois.png';
+import flaskIconUrl from './images/flask.png';
+
+function getIcons(L) {
+    const pirateIcon = L.icon({
+        iconUrl: pirateIconUrl,
+        iconSize: [64, 64],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+    })
+
+    const villageoisIcon = L.icon({
+        iconUrl: villageoisIconUrl,
+        iconSize: [64, 64],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+    })
+
+    const flaskIcon = L.icon({
+        iconUrl: flaskIconUrl,
+        iconSize: [64, 64],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+    })
+
+    return { pirateIcon, villageoisIcon, flaskIcon, playerIcon }
+}
