@@ -6,6 +6,7 @@ import {
 	getPlayerByLogin,
 	getRessources,
 	grabPotionFlask,
+	isNearby,
 	terminatePirate,
 	turnVillagerIntoPirate,
 } from './service';
@@ -69,9 +70,7 @@ router.post('/resources/:resourceId', (req: ResourceOperationRequest, res) => {
 		return;
 	}
 
-	/*const isNear = isNearby(initiator.position, resource.position);*/
-	// TODO: check if the player is near the resource
-	const isNear = true;
+	const isNear = isNearby(initiator.position, resource.position);
 
 	if (!isNear) {
 		res.status(403).json({

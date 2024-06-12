@@ -16,12 +16,13 @@ function getRessources(
 	for (const r in resources) {
 		// Copy the resource to avoid modifying the original resource
 		let ressToAdd = { ...resources[r] };
-		//only the list of potions + only the other players of his/her team.
+
 		if (
 			resources[r].role === 'FLASK' ||
 			resources[r].role === player.role ||
 			player.role === 'ADMIN'
 		) {
+			//only the list of potions + only the other players of his/her team.
 			// if ressource id is not the player id we don't do the nearbyResources
 			if (resources[r].id === player.id) {
 				// Get list of nearby resources of this resource if it's a player
@@ -82,44 +83,8 @@ function createNewPlayerAtPosition(
 			villagersTurned: 0,
 		},
 		nearbyResources: [],
+		isDead: false,
 	};
-}
-
-function takeResource(
-	initiatorId: string,
-	resource: GameResource,
-	//resources: { [key: string]: GameResource },
-) {
-	console.log(`initiatorId: ${initiatorId} resource: ${resource}`);
-	/*const initiator = resources[initiatorId];
-
-    if (!initiator || initiator.role === 'fiole') {
-        // Si l'initiateur n'est pas un joueur ou est une fiole, annuler l'action
-        return;
-    }
-
-    switch (resource.role) {
-    case 'villageois':
-    case 'pirate':
-        // Si un villageois tente de prendre un pirate, il l'élimine
-        if (initiator.role === 'villageois' && resource.role === 'pirate') {
-            delete resources[resource.id]; // Éliminer le pirate
-        }
-        // Si un pirate tente de prendre un villageois, il le transforme en pirate
-        else if (initiator.role === 'pirate' && resource.role === 'villageois') {
-            resource.role = 'pirate'; // Transformer le villageois en pirate
-        }
-        break;
-    case 'fiole':
-        // Les villageois et les pirates peuvent prendre des fioles
-        if (initiator.role === 'villageois' || initiator.role === 'pirate') {
-            initiator.fiolesAmount = (initiator.fiolesAmount || 0) + 1; // Ajouter une fiole à l'initiateur
-            delete resources[resource.id]; // Retirer la fiole des ressources
-        }
-        break;
-    default:
-        break;
-    }*/
 }
 
 function grabPotionFlask(
@@ -155,8 +120,29 @@ function grabPotionFlask(
 
 function turnVillagerIntoPirate(player: GameResource, villager: GameResource) {
 	if (player.role === 'PIRATE' && villager.role === 'VILLAGEOIS') {
-		villager.role = 'PIRATE';
-		player.statistics.villagersTurned++;
+		// Vérifie si le villageois a une potion
+		const villagerHasPotion = villager.flasks.some(
+			flask => flask.role === 'FLASK',
+		);
+
+		if (villagerHasPotion) {
+			console.log(
+				'Le villageois ne peut pas être transformé car il a une potion.',
+			);
+			return; // Ne pas transformer le villageois
+		}
+
+		// Si le villageois n'a pas de potion, le pirate utilise une de ses propres potions
+		const flaskIndex = player.flasks.findIndex(flask => flask.role === 'FLASK');
+		if (flaskIndex > -1) {
+			player.flasks.splice(flaskIndex, 1); // Utiliser une potion
+			villager.role = 'PIRATE';
+			player.statistics.villagersTurned++;
+		} else {
+			console.log(
+				"Le pirate n'a pas de potion pour transformer le villageois.",
+			);
+		}
 	}
 }
 
@@ -197,7 +183,6 @@ function isNearby(position1: Position, position2: Position): boolean {
 
 export {
 	createNewPlayerAtPosition,
-	takeResource,
 	getPlayerByLogin,
 	getRessources,
 	grabPotionFlask,
