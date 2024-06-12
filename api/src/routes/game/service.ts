@@ -128,8 +128,7 @@ function grabPotionFlask(
 	resources: { [key: string]: GameResource },
 ) {
 	if (
-		player.role === 'VILLAGEOIS' &&
-		player.role === 'PIRATE' &&
+		(player.role === 'VILLAGEOIS' || player.role === 'PIRATE') &&
 		resource.role === 'FLASK'
 	) {
 		player.flasks.push(resource);
