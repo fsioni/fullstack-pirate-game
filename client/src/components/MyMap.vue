@@ -207,6 +207,7 @@ let lastCoords = null
 let lastCoordsTime = null
 
 async function getPlayerPosition() {
+    return lastCoords
   if (lastCoords && lastCoordsTime && Date.now() - lastCoordsTime < 2000) {
     return lastCoords
   }
@@ -456,6 +457,24 @@ export default {
     setInterval(this.updateLocalPlayerPosition, 1000)
     setInterval(this.updateResourcesPositions, 1000)
     setInterval(this.updateZrr, 10000)
+    function success(pos) {
+        const crd = pos.coords;
+        lastCoords = [crd.latitude, crd.longitude]
+        console.log(`Votre position actuelle est :`, lastCoords);
+    }
+
+    function error(err) {
+      console.error(`ERROR(${err.code}): ${err.message}`);
+    }
+
+
+    const options = {
+      enableHighAccuracy: false,
+      timeout: 5000,
+      maximumAge: 0,
+    };
+
+    let id = navigator.geolocation.watchPosition(success, error, options);
   },
   async beforeMount() {
     console.log('Loading Leaflet...')
