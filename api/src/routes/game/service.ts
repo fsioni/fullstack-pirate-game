@@ -1,5 +1,9 @@
 import { PlayerRequestParam } from './interfaces';
-import { GameResource, Position, PlayerResource } from '../../models/GameResource';
+import {
+	GameResource,
+	PlayerResource,
+	Position,
+} from '../../models/GameResource';
 
 const DEFAULT_PLAYER_ROLE = 'VILLAGEOIS';
 const MAX_DISTANCE_TO_INTERACT = 5;
@@ -10,18 +14,25 @@ function getRessources(
 ) {
 	const res = [];
 	for (const r in resources) {
-        // Copy the resource to avoid modifying the original resource
-        let ressToAdd = { ...resources[r] };
+		// Copy the resource to avoid modifying the original resource
+		let ressToAdd = { ...resources[r] };
 		//only the list of potions + only the other players of his/her team.
-		if (resources[r].role === 'FLASK' || resources[r].role === player.role || player.role === 'ADMIN') {
-            // if ressource id is not the player id we don't do the nearbyResources
-            if (resources[r].id === player.id) {
-                // Get list of nearby resources of this resource if it's a player
-                if (resources[r].role !== 'FLASK') {
-                    ressToAdd = { ...ressToAdd, nearbyResources: [] } as PlayerResource;
-                    ressToAdd.nearbyResources = getNearbyResources(resources, resources[r]);
-                }
-            }
+		if (
+			resources[r].role === 'FLASK' ||
+			resources[r].role === player.role ||
+			player.role === 'ADMIN'
+		) {
+			// if ressource id is not the player id we don't do the nearbyResources
+			if (resources[r].id === player.id) {
+				// Get list of nearby resources of this resource if it's a player
+				if (resources[r].role !== 'FLASK') {
+					ressToAdd = { ...ressToAdd, nearbyResources: [] } as PlayerResource;
+					ressToAdd.nearbyResources = getNearbyResources(
+						resources,
+						resources[r],
+					);
+				}
+			}
 			res.push(ressToAdd);
 		}
 	}
@@ -30,19 +41,22 @@ function getRessources(
 }
 
 function getNearbyResources(
-    resources: { [key: string]: GameResource },
-    resource: GameResource,
+	resources: { [key: string]: GameResource },
+	resource: GameResource,
 ) {
-    const nearbyResources = [];
+	const nearbyResources = [];
 
-    for (const r in resources) {
-        if (resources[r].id !== resource.id && isNearby(resource.position, resources[r].position)) {
-            // On met des copies des ressources pour éviter de modifier les ressources originales
-            nearbyResources.push({ ...resources[r], nearbyResources: []});
-        }
-    }
+	for (const r in resources) {
+		if (
+			resources[r].id !== resource.id &&
+			isNearby(resource.position, resources[r].position)
+		) {
+			// On met des copies des ressources pour éviter de modifier les ressources originales
+			nearbyResources.push({ ...resources[r], nearbyResources: [] });
+		}
+	}
 
-    return nearbyResources;
+	return nearbyResources;
 }
 
 function getPlayerByLogin(
@@ -67,7 +81,7 @@ function createNewPlayerAtPosition(
 			piratesTerminated: 0,
 			villagersTurned: 0,
 		},
-        nearbyResources: [],
+		nearbyResources: [],
 	};
 }
 
@@ -113,7 +127,11 @@ function grabPotionFlask(
 	resource: GameResource,
 	resources: { [key: string]: GameResource },
 ) {
-	if (player.role === 'VILLAGEOIS' && resource.role === 'FLASK') {
+	if (
+		player.role === 'VILLAGEOIS' &&
+		player.role === 'PIRATE' &&
+		resource.role === 'FLASK'
+	) {
 		player.flasks.push(resource);
 		player.statistics.flasksGathered++;
 
