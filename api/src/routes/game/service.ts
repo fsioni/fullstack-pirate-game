@@ -6,7 +6,7 @@ import {
 } from '../../models/GameResource';
 
 const DEFAULT_PLAYER_ROLE = 'VILLAGEOIS';
-const MAX_DISTANCE_TO_INTERACT = 5;
+const MAX_DISTANCE_TO_INTERACT = 10;
 
 function getRessources(
 	player: GameResource,
