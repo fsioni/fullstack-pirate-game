@@ -1,4 +1,4 @@
-import { Position, GameResource } from '../../models/GameResource';
+import { GameResource, Position } from '../../models/GameResource';
 import { zrr } from '../../models/GameState';
 
 function getRandomPositionInZrr(): Position {
@@ -19,19 +19,16 @@ function getRandomPositionInZrr(): Position {
 }
 
 function createNewFlaskAtPosition(
-    resources: { [key: string]: GameResource },
-    position: Position,
+	resources: { [key: string]: GameResource },
+	position: Position,
 ) {
-    const flaskId = `FLASK_${Date.now()}`;
-    resources[flaskId] = {
-        id: flaskId,
-        role: 'FLASK',
-        position: position,
-        TTL: 10,
-    };
+	const flaskId = `FLASK_${Date.now()}`;
+	resources[flaskId] = {
+		id: flaskId,
+		role: 'FLASK',
+		position: position,
+		TTL: 60,
+	};
 }
 
-export {
-    getRandomPositionInZrr ,
-    createNewFlaskAtPosition,
-};
+export { getRandomPositionInZrr, createNewFlaskAtPosition };

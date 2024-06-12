@@ -1,4 +1,7 @@
-type Position = { x: number; y: number };
+interface Position {
+	x: number;
+	y: number;
+}
 
 interface BaseResource {
 	id: string;
@@ -15,7 +18,8 @@ interface PlayerResource extends BaseResource {
 	role: 'VILLAGEOIS' | 'PIRATE' | 'ADMIN';
 	flasks: FlaskResource[];
 	statistics: PlayerStatistics;
-    nearbyResources: GameResource[];
+	nearbyResources: GameResource[];
+	isDead: boolean;
 }
 
 interface FlaskResource extends BaseResource {
