@@ -2,6 +2,10 @@
   <section>
     <h2>Carte</h2>
     <div id="map" ref="map" class="map"></div>
+    <div class="button-container">
+      <button v-if="nearbyFlask" @click="collectFlask(nearbyFlask)">Récupérer Fiole</button>
+      <button @click="centerMapOnPlayer">Centrer sur ma position</button>
+    </div>
   </section>
 </template>
 
@@ -21,51 +25,62 @@ let localPlayerMarker = null
 let L = null
 let zrrLayer = null
 
-let playerMarkers = new Map()
+let pirateMarkers = new Map()
+let villageoisMarkers = new Map()
 let flaskMarkers = new Map()
 
-function getIcons(L) {
-  const pirateIcon = L.icon({
+let pirateIcon = null
+let villageoisIcon = null
+let flaskIcon = null
+let playerIcon = null
+
+function initIcons(L) {
+  console.log('Initializing icons')
+
+  pirateIcon = L.icon({
     iconUrl: pirateIconUrl,
     iconSize: [64, 64],
-    iconAnchor: [16, 32],
-    popupAnchor: [0, -32]
+    iconAnchor: [32, 32],
+    popupAnchor: [0, -32],
+    className: 'PIRATE'
   })
 
-  const villageoisIcon = L.icon({
+  villageoisIcon = L.icon({
     iconUrl: villageoisIconUrl,
     iconSize: [64, 64],
-    iconAnchor: [16, 32],
-    popupAnchor: [0, -32]
+    iconAnchor: [32, 32],
+    popupAnchor: [0, -32],
+    className: 'VILLAGEOIS'
   })
 
-  const flaskIcon = L.icon({
+  flaskIcon = L.icon({
     iconUrl: flaskIconUrl,
     iconSize: [64, 64],
-    iconAnchor: [16, 32],
-    popupAnchor: [0, -32]
+    iconAnchor: [32, 32],
+    popupAnchor: [0, -32],
+    className: 'FLASK'
   })
 
-  const playerIcon = L.icon({
+  playerIcon = L.icon({
     iconUrl: playerIconUrl,
     iconSize: [64, 64],
-    iconAnchor: [16, 32],
-    popupAnchor: [0, -32]
+    iconAnchor: [32, 32],
+    popupAnchor: [0, -32],
+    className: 'PLAYER'
   })
-
-  return { pirateIcon, villageoisIcon, flaskIcon, playerIcon }
 }
 
 function updateMarkers(data, markersMap, icon) {
-  // Suppression des marqueurs qui ne sont plus présents
-  for (const id of markersMap.keys()) {
-    if (!data.some((resource) => resource.id === id)) {
-      myMap.removeLayer(markersMap.get(id))
+  const existingMarkerIDs = new Set(data.map((resource) => resource.id))
+
+  for (const [id, marker] of markersMap.entries()) {
+    if (!existingMarkerIDs.has(id) && id !== localStorage.getItem('login')) {
+      console.log('Removing marker:', id)
+      myMap.removeLayer(marker)
       markersMap.delete(id)
     }
   }
 
-  // Ajout ou mise à jour des marqueurs
   data.forEach((resource) => {
     if (resource.id === localStorage.getItem('login')) {
       return
@@ -74,10 +89,11 @@ function updateMarkers(data, markersMap, icon) {
     let marker = markersMap.get(resource.id)
     if (marker) {
       marker.setLatLng([resource.position.x, resource.position.y])
-      console.log('update', resource.id)
     } else {
-      console.log('add', resource.id)
-      marker = L.marker([resource.position.x, resource.position.y], { icon }).addTo(myMap)
+      marker = L.marker([resource.position.x, resource.position.y], {
+        icon,
+        className: resource.role
+      }).addTo(myMap)
       marker.bindPopup(resource.role)
       markersMap.set(resource.id, marker)
     }
@@ -85,14 +101,12 @@ function updateMarkers(data, markersMap, icon) {
 }
 
 function addResourcesToMap(data) {
-  const { pirateIcon, villageoisIcon, flaskIcon } = getIcons(L)
-
   const pirates = data.filter((resource) => resource.role === 'PIRATE')
   const villageois = data.filter((resource) => resource.role === 'VILLAGEOIS')
   const flasks = data.filter((resource) => resource.role === 'FLASK')
 
-  updateMarkers(pirates, playerMarkers, pirateIcon)
-  updateMarkers(villageois, playerMarkers, villageoisIcon)
+  updateMarkers(pirates, pirateMarkers, pirateIcon)
+  updateMarkers(villageois, villageoisMarkers, villageoisIcon)
   updateMarkers(flasks, flaskMarkers, flaskIcon)
 }
 
@@ -120,45 +134,46 @@ async function initMap() {
         'pk.eyJ1IjoieGFkZXMxMDExNCIsImEiOiJjbGZoZTFvbTYwM29sM3ByMGo3Z3Mya3dhIn0.df9VnZ0zo7sdcqGNbfrAzQ'
     }
   ).addTo(myMap)
+
   return L
 }
 
 let gpsAskedThisSession = false
 let lastCoords = null
 let lastCoordsTime = null
+
 async function getPlayerPosition() {
-    if (lastCoords && lastCoordsTime && Date.now() - lastCoordsTime < 2000) {
-        console.log('Returning cached position')
-        return lastCoords
-    }
+  if (lastCoords && lastCoordsTime && Date.now() - lastCoordsTime < 2000) {
+    return lastCoords
+  }
 
-    const geoloc = await navigator.permissions.query({ name: 'geolocation' })
+  const geoloc = await navigator.permissions.query({ name: 'geolocation' })
 
-    if (geoloc.state === 'denied') {
-      throw new Error('Geolocation permission denied')
-    }
+  if (geoloc.state === 'denied') {
+    throw new Error('Geolocation permission denied')
+  }
 
-    if (geoloc.state === 'prompt' && gpsAskedThisSession) {
-        return [0, 0]
-    }
+  if (geoloc.state === 'prompt' && gpsAskedThisSession) {
+    return [0, 0]
+  }
 
-    if (!gpsAskedThisSession) {
-        console.log('Requesting geolocation permission...')
-        gpsAskedThisSession = true
-    }
+  if (!gpsAskedThisSession) {
+    console.log('Requesting geolocation permission...')
+    gpsAskedThisSession = true
+  }
 
-    return new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            lastCoords = [position.coords.latitude, position.coords.longitude]
-            lastCoordsTime = Date.now()
-            resolve([position.coords.latitude, position.coords.longitude])
-          },
-          (error) => {
-            reject(error)
-          }
-        )
-      })
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        lastCoords = [position.coords.latitude, position.coords.longitude]
+        lastCoordsTime = Date.now()
+        resolve([position.coords.latitude, position.coords.longitude])
+      },
+      (error) => {
+        reject(error)
+      }
+    )
+  })
 }
 
 export default {
@@ -169,14 +184,12 @@ export default {
       return false
     },
     updateLocalPlayerPosition: async function () {
-        const position = await getPlayerPosition()
-        if (localPlayerMarker == null) {
-            const { playerIcon } = getIcons(L)
-
-            localPlayerMarker = L.marker(position, { icon: playerIcon }).addTo(myMap)
-        }
-
+      const position = await getPlayerPosition()
+      if (localPlayerMarker == null) {
+        localPlayerMarker = L.marker(position, { icon: playerIcon }).addTo(myMap)
+      } else {
         localPlayerMarker.setLatLng(position)
+      }
     },
     sendLocalPlayerPositionToServer: async function () {
       const [latitude, longitude] = await getPlayerPosition()
@@ -213,6 +226,11 @@ export default {
         })
         const data = await response.json()
         addResourcesToMap(data)
+
+        const localPlayer = data.find((resource) => resource.id === localStorage.getItem('login'))
+        if (localPlayer) {
+          this.checkNearbyResourcesAndUpdateUI(localPlayer)
+        }
       } catch (error) {
         console.error('Error:', error)
       }
@@ -238,6 +256,78 @@ export default {
       } catch (error) {
         console.error('Error:', error)
       }
+    },
+    checkNearbyResourcesAndUpdateUI(localPlayer) {
+      const nearbyFlasks = localPlayer.nearbyResources.filter(
+        (resource) => resource.role === 'FLASK'
+      )
+      if (nearbyFlasks.length > 0) {
+        this.nearbyFlask = nearbyFlasks[0]
+      } else {
+        this.nearbyFlask = null
+      }
+    },
+    playerHasFlask() {
+      // Check if player has a flask in the inventory
+      // This function should check the player's inventory stored in localStorage or another state
+      return true // Example condition
+    },
+
+    showFlaskButton(flask) {
+      const flaskButton = document.createElement('button')
+      flaskButton.innerText = 'Récupérer Fiole'
+      flaskButton.onclick = () => this.collectFlask(flask)
+      document.body.appendChild(flaskButton)
+    },
+
+    showEnemyButton(enemy) {
+      const enemyButton = document.createElement('button')
+      enemyButton.innerText = 'Utiliser Fiole sur Ennemi'
+      enemyButton.onclick = () => this.useFlaskOnEnemy(enemy)
+      document.body.appendChild(enemyButton)
+    },
+
+    collectFlask(flask) {
+      const url = `${import.meta.env.VITE_GAME_API_URL}/resources/${flask.id}`
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${window.localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ operationType: 'grab potion flask' })
+      })
+        .then((response) => {
+          if (response.ok) {
+            console.log('Fiole récupérée')
+            this.nearbyFlask = null
+          } else {
+            return response.json().then((data) => {
+              throw new Error(data.message || 'Erreur lors de la récupération de la fiole')
+            })
+          }
+        })
+        .catch((error) => console.error('Error:', error))
+    },
+    useFlaskOnEnemy(enemy) {
+      // Send a request to the backend to use the flask on the enemy
+      const url = `${import.meta.env.VITE_GAME_API_URL}/use-flask/${enemy.id}`
+      fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${window.localStorage.getItem('token')}`
+        }
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("Fiole utilisée sur l'ennemi:", data)
+          // Update the UI accordingly
+        })
+        .catch((error) => console.error('Error:', error))
+    },
+    centerMapOnPlayer() {
+      myMap.setView(localPlayerMarker.getLatLng(), zoom)
     }
   },
   beforeRouteEnter(to, from, next) {
@@ -257,6 +347,7 @@ export default {
   async beforeMount() {
     console.log('Loading Leaflet...')
     L = await initMap()
+    await initIcons(L)
     await this.updateResourcesPositions()
     await this.updateZrr()
     await this.updateLocalPlayerPosition()
@@ -266,6 +357,11 @@ export default {
       lng = e.latlng.lng
       this.updateMap()
     })
+  },
+  data() {
+    return {
+      nearbyFlask: null
+    }
   }
 }
 </script>
@@ -275,5 +371,38 @@ export default {
   height: 400px;
   width: 100%;
   border: 1px solid;
+}
+
+.button-container {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 15px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  width: 80%;
+  max-width: 300px;
+  text-align: center;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+button:active {
+  background-color: #004494;
 }
 </style>

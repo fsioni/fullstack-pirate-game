@@ -15,7 +15,7 @@ import { resourcesOnMap, zrr } from '../../models/GameState';
 const router = express.Router();
 
 // Get all game resources positions (only who need to be showed)
-const ressourceRep = (req: RequestWithUser, res : any) => {
+const ressourceRep = (req: RequestWithUser, res: any) => {
 	if (!req.user) {
 		res.status(401).json({
 			error: 'Unauthorized',
@@ -37,7 +37,7 @@ const ressourceRep = (req: RequestWithUser, res : any) => {
 	const resources = getRessources(player, resourcesOnMap);
 
 	res.json(resources);
-}
+};
 router.get('/resources', ressourceRep);
 router.post('/resources', ressourceRep);
 
@@ -84,22 +84,22 @@ router.post('/resources/:resourceId', (req: ResourceOperationRequest, res) => {
 	const operationType = req.body.operationType;
 
 	switch (operationType) {
-		case 'grab potion flask':
-			grabPotionFlask(initiator, resource, resourcesOnMap);
-			break;
-		case 'turn villager into pirate':
-			turnVillagerIntoPirate(initiator, resource);
-			break;
-		case 'terminate pirate':
-			terminatePirate(initiator, resource, resourcesOnMap);
-			break;
-		default:
-			res.status(400).json({
-				error: 'Invalid operation',
-				message:
+	case 'grab potion flask':
+		grabPotionFlask(initiator, resource, resourcesOnMap);
+		break;
+	case 'turn villager into pirate':
+		turnVillagerIntoPirate(initiator, resource);
+		break;
+	case 'terminate pirate':
+		terminatePirate(initiator, resource, resourcesOnMap);
+		break;
+	default:
+		res.status(400).json({
+			error: 'Invalid operation',
+			message:
 					'Invalid operation type or resource is not operable by user at this moment',
-			});
-			return;
+		});
+		return;
 	}
 
 	res.status(204).json();
@@ -128,7 +128,7 @@ router.put('/resources/:playerLogin/position', (req, res) => {
 });
 
 // Get zrr boundaries
-const zrrRep = (req:any, res:any) => {
+const zrrRep = (req: any, res: any) => {
 	if (zrr === null) {
 		res.status(404).json({
 			error: 'Not found',
@@ -138,9 +138,8 @@ const zrrRep = (req:any, res:any) => {
 	}
 
 	res.json(zrr);
-}
+};
 router.get('/zrr', zrrRep);
 router.post('/zrr', zrrRep);
-
 
 export default router;
