@@ -1,10 +1,27 @@
 <template>
   <section>
     <h2>Carte</h2>
-    <div id="map" ref="map" class="map"></div>
+    <div :id="isDead ? 'map map-dead' : 'map'" ref="map" class="map"></div>
     <div class="button-container">
+      <button v-if="showTransformButton" class="enemy-action-button" @click="transformEnemy">
+        Utiliser Fiole sur Villageois
+      </button>
+      <button v-if="showKillButton" class="enemy-action-button" @click="killEnemy">
+        Utiliser Fiole pour Tuer Pirate
+      </button>
       <button v-if="nearbyFlask" @click="collectFlask(nearbyFlask)">Récupérer Fiole</button>
       <button @click="centerMapOnPlayer">Centrer sur ma position</button>
+    </div>
+    <div class="flask-count">Potions : {{ flaskCount }}</div>
+    <div class="user-role">Rôle : {{ userRole }}</div>
+    <div v-if="isDead" class="dead-overlay">
+      <div class="text">Vous êtes mort</div>
+    </div>
+    <div v-if="statistics" class="statistics">
+      <h3>Statistiques</h3>
+      <p>Fioles récupérées : {{ statistics.flasksGathered }}</p>
+      <p>Pirates éliminés : {{ statistics.piratesTerminated }}</p>
+      <p>Villageois convertis : {{ statistics.villagersTurned }}</p>
     </div>
   </section>
 </template>
@@ -12,9 +29,12 @@
 <script>
 import 'leaflet/dist/leaflet.css'
 import pirateIconUrl from '@/assets/images/pirate.png'
+import pirateIconTintedUrl from '@/assets/images/pirate-tinted.png'
 import villageoisIconUrl from '@/assets/images/villageois.png'
+import villageoisIconTintedUrl from '@/assets/images/villageois-tinted.png'
 import flaskIconUrl from '@/assets/images/flask.png'
 import playerIconUrl from '@/assets/images/player.png'
+import deadIconUrl from '@/assets/images/skull.png'
 
 let lat = 45.782,
   lng = 4.8656,
@@ -33,6 +53,10 @@ let pirateIcon = null
 let villageoisIcon = null
 let flaskIcon = null
 let playerIcon = null
+let deadIcon = null
+
+let pirateIconTinted = null
+let villageoisIconTinted = null
 
 function initIcons(L) {
   console.log('Initializing icons')
@@ -45,12 +69,28 @@ function initIcons(L) {
     className: 'PIRATE'
   })
 
+  pirateIconTinted = L.icon({
+    iconUrl: pirateIconTintedUrl,
+    iconSize: [64, 64],
+    iconAnchor: [32, 32],
+    popupAnchor: [0, -32],
+    className: 'PIRATE-TINTED'
+  })
+
   villageoisIcon = L.icon({
     iconUrl: villageoisIconUrl,
     iconSize: [64, 64],
     iconAnchor: [32, 32],
     popupAnchor: [0, -32],
     className: 'VILLAGEOIS'
+  })
+
+  villageoisIconTinted = L.icon({
+    iconUrl: villageoisIconTintedUrl,
+    iconSize: [64, 64],
+    iconAnchor: [32, 32],
+    popupAnchor: [0, -32],
+    className: 'VILLAGEOIS-TINTED'
   })
 
   flaskIcon = L.icon({
@@ -68,11 +108,20 @@ function initIcons(L) {
     popupAnchor: [0, -32],
     className: 'PLAYER'
   })
+
+  deadIcon = L.icon({
+    iconUrl: deadIconUrl,
+    iconSize: [64, 64],
+    iconAnchor: [32, 32],
+    popupAnchor: [0, -32],
+    className: 'DEAD'
+  })
 }
 
-function updateMarkers(data, markersMap, icon) {
+function updateMarkers(data, markersMap, icon, tintedIcon) {
   const existingMarkerIDs = new Set(data.map((resource) => resource.id))
 
+  // Supprimer les marqueurs qui n'existent plus
   for (const [id, marker] of markersMap.entries()) {
     if (!existingMarkerIDs.has(id) && id !== localStorage.getItem('login')) {
       console.log('Removing marker:', id)
@@ -81,17 +130,32 @@ function updateMarkers(data, markersMap, icon) {
     }
   }
 
+  // Ajouter ou mettre à jour les marqueurs existants
   data.forEach((resource) => {
     if (resource.id === localStorage.getItem('login')) {
       return
     }
 
     let marker = markersMap.get(resource.id)
+    let resourceIcon = icon
+
+    if (resource.role === 'VILLAGEOIS' || resource.role === 'PIRATE') {
+      const resourceHaveFlask = resource.flasks.length > 0
+      resourceIcon = resource.isDead ? deadIcon : resourceHaveFlask ? tintedIcon : icon
+    }
+
     if (marker) {
+      // Mise à jour de la position et de l'icône si nécessaire
       marker.setLatLng([resource.position.x, resource.position.y])
+
+      // Mise à jour de l'icône si l'état a changé
+      if (marker.options.icon !== resourceIcon) {
+        marker.setIcon(resourceIcon)
+      }
     } else {
+      // Création d'un nouveau marqueur
       marker = L.marker([resource.position.x, resource.position.y], {
-        icon,
+        icon: resourceIcon,
         className: resource.role
       }).addTo(myMap)
       marker.bindPopup(resource.role)
@@ -105,8 +169,8 @@ function addResourcesToMap(data) {
   const villageois = data.filter((resource) => resource.role === 'VILLAGEOIS')
   const flasks = data.filter((resource) => resource.role === 'FLASK')
 
-  updateMarkers(pirates, pirateMarkers, pirateIcon)
-  updateMarkers(villageois, villageoisMarkers, villageoisIcon)
+  updateMarkers(pirates, pirateMarkers, pirateIcon, pirateIconTinted)
+  updateMarkers(villageois, villageoisMarkers, villageoisIcon, villageoisIconTinted)
   updateMarkers(flasks, flaskMarkers, flaskIcon)
 }
 
@@ -143,7 +207,12 @@ let lastCoords = null
 let lastCoordsTime = null
 
 async function getPlayerPosition() {
-  if (lastCoords && lastCoordsTime && Date.now() - lastCoordsTime < 2000) {
+  const mockX = 45.757122893740245
+  const mockY = 45.757122893740245
+
+  return [mockX, mockY] // TODO: Remplacer par la vraie position du joueur
+
+  /*if (lastCoords && lastCoordsTime && Date.now() - lastCoordsTime < 2000) {
     return lastCoords
   }
 
@@ -173,7 +242,7 @@ async function getPlayerPosition() {
         reject(error)
       }
     )
-  })
+  })*/
 }
 
 export default {
@@ -213,7 +282,7 @@ export default {
           console.error('Error:', error)
         })
     },
-    updateResourcesPositions: async function () {
+    async updateResourcesPositions() {
       const token = window.localStorage.getItem('token')
       const url = import.meta.env.VITE_GAME_API_URL + '/resources'
       try {
@@ -230,6 +299,10 @@ export default {
         const localPlayer = data.find((resource) => resource.id === localStorage.getItem('login'))
         if (localPlayer) {
           this.checkNearbyResourcesAndUpdateUI(localPlayer)
+          this.flaskCount = localPlayer.flasks.length
+          this.userRole = localPlayer.role
+          this.isDead = localPlayer.isDead
+          this.statistics = localPlayer.statistics
         }
       } catch (error) {
         console.error('Error:', error)
@@ -261,18 +334,18 @@ export default {
       const nearbyFlasks = localPlayer.nearbyResources.filter(
         (resource) => resource.role === 'FLASK'
       )
+      const nearbyPlayers = localPlayer.nearbyResources.filter(
+        (resource) => resource.role === 'PIRATE' || resource.role === 'VILLAGEOIS'
+      )
+
       if (nearbyFlasks.length > 0) {
         this.nearbyFlask = nearbyFlasks[0]
       } else {
         this.nearbyFlask = null
       }
-    },
-    playerHasFlask() {
-      // Check if player has a flask in the inventory
-      // This function should check the player's inventory stored in localStorage or another state
-      return true // Example condition
-    },
 
+      this.handleNearbyPlayers(localPlayer, nearbyPlayers)
+    },
     showFlaskButton(flask) {
       const flaskButton = document.createElement('button')
       flaskButton.innerText = 'Récupérer Fiole'
@@ -280,13 +353,22 @@ export default {
       document.body.appendChild(flaskButton)
     },
 
-    showEnemyButton(enemy) {
-      const enemyButton = document.createElement('button')
-      enemyButton.innerText = 'Utiliser Fiole sur Ennemi'
-      enemyButton.onclick = () => this.useFlaskOnEnemy(enemy)
-      document.body.appendChild(enemyButton)
-    },
+    showEnemyButton: function (enemy, actionType) {
+      const existingButton = document.querySelector(`.enemy-action-button[data-id="${enemy.id}"]`)
+      if (existingButton) return
 
+      const enemyButton = document.createElement('button')
+      enemyButton.innerText =
+        actionType === 'transform'
+          ? 'Utiliser Fiole sur Villageois'
+          : 'Utiliser Fiole pour Tuer Pirate'
+      enemyButton.classList.add('enemy-action-button')
+      enemyButton.dataset.id = enemy.id
+      enemyButton.onclick = () => this.useFlaskOnEnemy(enemy, actionType)
+
+      // Ajouter le bouton dans le conteneur de boutons
+      document.querySelector('.button-container').appendChild(enemyButton)
+    },
     collectFlask(flask) {
       const url = `${import.meta.env.VITE_GAME_API_URL}/resources/${flask.id}`
       fetch(url, {
@@ -309,25 +391,61 @@ export default {
         })
         .catch((error) => console.error('Error:', error))
     },
-    useFlaskOnEnemy(enemy) {
-      // Send a request to the backend to use the flask on the enemy
-      const url = `${import.meta.env.VITE_GAME_API_URL}/use-flask/${enemy.id}`
+    useFlaskOnEnemy: function (enemy, actionType) {
+      const operationType =
+        actionType === 'transform' ? 'turn villager into pirate' : 'terminate pirate'
+      const url = `${import.meta.env.VITE_GAME_API_URL}/resources/${enemy.id}`
       fetch(url, {
-        method: 'PUT',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${window.localStorage.getItem('token')}`
-        }
+        },
+        body: JSON.stringify({ operationType })
       })
         .then((response) => response.json())
         .then((data) => {
-          console.log("Fiole utilisée sur l'ennemi:", data)
-          // Update the UI accordingly
+          console.log("Action effectuée sur l'ennemi:", data)
         })
         .catch((error) => console.error('Error:', error))
     },
     centerMapOnPlayer() {
       myMap.setView(localPlayerMarker.getLatLng(), zoom)
+    },
+    handleNearbyPlayers: function (localPlayer, nearbyPlayers) {
+      this.showTransformButton = false
+      this.showKillButton = false
+      this.targetEnemy = null
+
+      nearbyPlayers = nearbyPlayers.filter((player) => !player.isDead)
+
+      nearbyPlayers.forEach((player) => {
+        if (localPlayer.role === 'PIRATE' && this.flaskCount > 0 && player.role === 'VILLAGEOIS') {
+          this.showTransformButton = true
+          this.targetEnemy = player
+        } else if (
+          localPlayer.role === 'VILLAGEOIS' &&
+          this.flaskCount > 0 &&
+          player.role === 'PIRATE'
+        ) {
+          this.showKillButton = true
+          this.targetEnemy = player
+        }
+      })
+    },
+    transformEnemy() {
+      if (this.targetEnemy) {
+        this.useFlaskOnEnemy(this.targetEnemy, 'transform')
+      }
+    },
+    killEnemy() {
+      if (this.targetEnemy) {
+        this.useFlaskOnEnemy(this.targetEnemy, 'kill')
+      }
+    },
+    clearEnemyButtons: function () {
+      const buttons = document.querySelectorAll('.enemy-action-button')
+      buttons.forEach((button) => button.remove())
     }
   },
   beforeRouteEnter(to, from, next) {
@@ -360,13 +478,29 @@ export default {
   },
   data() {
     return {
-      nearbyFlask: null
+      nearbyFlask: null,
+      flaskCount: 0,
+      userRole: null,
+      isDead: false,
+      statistics: null,
+      showTransformButton: false,
+      showKillButton: false,
+      targetEnemy: null
     }
   }
 }
 </script>
 
 <style scoped>
+section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  overflow: auto;
+  max-height: 100vh;
+}
+
 .map {
   height: 400px;
   width: 100%;
@@ -374,10 +508,7 @@ export default {
 }
 
 .button-container {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+  margin-top: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -404,5 +535,73 @@ button:hover {
 
 button:active {
   background-color: #004494;
+}
+
+.info-container {
+  width: 100%;
+  padding: 10px;
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.flask-count,
+.user-role {
+  color: #ffffff;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.statistics {
+  text-align: center;
+}
+
+.dead-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  pointer-events: all;
+}
+
+.dead-overlay .text {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.map-dead {
+  pointer-events: none;
+}
+
+.enemy-action-button {
+  background-color: #ff0000;
+  color: white;
+  border: none;
+  padding: 15px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  width: 80%;
+  max-width: 300px;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.enemy-action-button:hover {
+  background-color: #cc0000;
+}
+
+.enemy-action-button:active {
+  background-color: #990000;
 }
 </style>
