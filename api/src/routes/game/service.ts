@@ -152,7 +152,7 @@ function terminatePirate(
 	resources: { [key: string]: GameResource },
 ) {
 	if (player.role === 'VILLAGEOIS' && pirate.role === 'PIRATE') {
-		delete resources[pirate.id];
+		pirate.isDead = true;
 		player.statistics.piratesTerminated++;
 	}
 }
