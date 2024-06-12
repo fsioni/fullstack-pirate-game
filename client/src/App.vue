@@ -49,7 +49,7 @@ onMounted(checkLoginStatus)
 
 <template>
   <header>
-    <img alt="Vue logo" class="logo" height="125" src="@/assets/logo.svg" width="125" />
+    <img alt="Vue logo" class="logo" height="125" src="@/assets/logo.jpg" width="125" style="border-radius: 20px;"/>
 
     <div class="wrapper">
       <div v-if="isLogged">
