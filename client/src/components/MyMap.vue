@@ -207,12 +207,12 @@ let lastCoords = null
 let lastCoordsTime = null
 
 async function getPlayerPosition() {
-  const mockX = 45.757122893740245
-  const mockY = 45.757122893740245
+//   const mockX = 45.757122893740245
+//   const mockY = 45.757122893740245
 
-  return [mockX, mockY] // TODO: Remplacer par la vraie position du joueur
+//   return [mockX, mockY] // TODO: Remplacer par la vraie position du joueur
 
-  /*if (lastCoords && lastCoordsTime && Date.now() - lastCoordsTime < 2000) {
+  if (lastCoords && lastCoordsTime && Date.now() - lastCoordsTime < 2000) {
     return lastCoords
   }
 
@@ -242,7 +242,7 @@ async function getPlayerPosition() {
         reject(error)
       }
     )
-  })*/
+  })
 }
 
 export default {
