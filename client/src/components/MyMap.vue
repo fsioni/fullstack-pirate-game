@@ -456,7 +456,7 @@ export default {
     setInterval(this.sendLocalPlayerPositionToServer, 1000)
     setInterval(this.updateLocalPlayerPosition, 1000)
     setInterval(this.updateResourcesPositions, 1000)
-    setInterval(this.updateZrr, 10000)
+    setInterval(this.updateZrr, 5000)
     function success(pos) {
         const crd = pos.coords;
         lastCoords = [crd.latitude, crd.longitude]
